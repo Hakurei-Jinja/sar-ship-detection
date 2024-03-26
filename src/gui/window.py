@@ -37,9 +37,9 @@ class Window(QWidget):
         vertical_layout.addLayout(horizon_layout)
         self.setLayout(vertical_layout)
 
-        self.button.clicked.connect(self.__select_process_set_img)
+        self.button.clicked.connect(self.__button_callback)
 
-    def __select_process_set_img(self):
+    def __button_callback(self):
         try:
             image_raw_np = self.__select_image()
             image_processed_np = self.__process_image(image_raw_np)

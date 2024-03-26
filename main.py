@@ -1,11 +1,11 @@
 import sys
 
 from PySide6.QtWidgets import QApplication
-from ultralytics import YOLO
 
-from src.dataset.dataset_convertor import DatasetConvertor
-from src.gui.utils.np_image import NPImagePredictor
+from src.dataset import DatasetConvertor
+from src.gui.utils import NPImagePredictor
 from src.gui.window import Window
+from src.nn.model import DetectionModel, MyYOLO
 
 
 def convert_SSDD():
@@ -15,9 +15,10 @@ def convert_SSDD():
 
 
 if __name__ == "__main__":
-    model = YOLO("./models/trained/yolov8s/weights/best.pt")
-    image_processor = NPImagePredictor(model)
-    app = QApplication(sys.argv)
-    form = Window(image_processor)
-    form.show()
-    sys.exit(app.exec())
+    model = MyYOLO("./models/cfg/yolov9c.yaml", verbose=True)
+    result = model.train(data="./datasets/SSDD/cfg/ssdd_all.yaml")
+
+    # app = QApplication(sys.argv)
+    # form = Window(NPImagePredictor(model))
+    # form.show()
+    # sys.exit(app.exec())
