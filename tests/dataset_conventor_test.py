@@ -20,13 +20,20 @@ voc_correct_labels_value = {
         [0.0, 0.53593, 0.76611, 0.02595, 0.14286],
     ],
 }
-
 coco_correct_labels_value = {
     "000001.txt": [[0.0, 0.58333, 0.30134, 0.11538, 0.30547]],
     "000006.txt": [
         [0.0, 0.28452, 0.44519, 0.16229, 0.12304],
         [0, 0.73595, 0.47334, 0.11006, 0.05628],
         [0, 0.53915, 0.76916, 0.02612, 0.14267],
+    ],
+}
+coco_remap_labels_value = {
+    "000001.txt": [[1.0, 0.58333, 0.30134, 0.11538, 0.30547]],
+    "000006.txt": [
+        [1.0, 0.28452, 0.44519, 0.16229, 0.12304],
+        [1.0, 0.73595, 0.47334, 0.11006, 0.05628],
+        [1.0, 0.53915, 0.76916, 0.02612, 0.14267],
     ],
 }
 
@@ -170,7 +177,6 @@ class TestDatasetConvertor(unittest.TestCase):
         dataset_convertor = DatasetConvertor()
         dataset_convertor.load_config(
             "./tests/test_dataset/cfg/coco/test_convertor_list.yaml",
-            "./tests/test_dataset/cfg/class.yaml",
         )
         dataset_convertor.convert()
         with open(
@@ -183,6 +189,24 @@ class TestDatasetConvertor(unittest.TestCase):
         ) as file:
             converted = convert_label_txt(file)
             self.assertEqual(converted, coco_correct_labels_value["000006.txt"])
+
+    def test_convert_coco_remap_labels_correct(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/coco/test_convertor_list.yaml",
+            "./tests/test_dataset/cfg/remap_class.yaml",
+        )
+        dataset_convertor.convert()
+        with open(
+            "./tests/test_dataset/converted/coco/01/labels/train/000001.txt", "r"
+        ) as f:
+            converted = convert_label_txt(f)
+            self.assertEqual(converted, coco_remap_labels_value["000001.txt"])
+        with open(
+            "./tests/test_dataset/converted/coco/01/labels/train/000006.txt", "r"
+        ) as file:
+            converted = convert_label_txt(file)
+            self.assertEqual(converted, coco_remap_labels_value["000006.txt"])
 
 
 if __name__ == "__main__":
