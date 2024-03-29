@@ -1,5 +1,0 @@
-data_type: train
-label_type: voc
-img_dir: ./tests/test_dataset/original/JPEGImages01
-label_dir: ./tests/test_dataset/original/Annotations01
-out_dir: ./tests/test_dataset/converted/01

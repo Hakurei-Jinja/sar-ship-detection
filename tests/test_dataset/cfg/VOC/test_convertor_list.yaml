@@ -1,0 +1,10 @@
+- data_type: train
+  label_type: voc
+  img: ./tests/test_dataset/original/VOC/JPEGImages01
+  label: ./tests/test_dataset/original/VOC/Annotations01
+  out: ./tests/test_dataset/converted/VOC/01
+- data_type: test
+  label_type: voc
+  img: ./tests/test_dataset/original/VOC/JPEGImages02
+  label: ./tests/test_dataset/original/VOC/Annotations02
+  out: ./tests/test_dataset/converted/VOC/01

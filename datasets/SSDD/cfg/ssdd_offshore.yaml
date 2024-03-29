@@ -1,0 +1,7 @@
+path: /home/kurisunya/Documents/Projects/Develop/SAR-ship-detection/datasets/SSDD/converted/offshore
+train: images/train
+val: images/test
+test: images/test
+
+names:
+  0: ship

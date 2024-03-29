@@ -155,8 +155,8 @@ cython_debug/
 
 converted/
 original/
-tmp/
 !/tests/test_dataset/*
+
 /runs/
 /models/trained/*
 # PyCharm

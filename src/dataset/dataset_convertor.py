@@ -1,79 +1,78 @@
 import os
-import shutil
 
 import yaml
 
+from .image_convertor import ImageConvertor, ImageConvertorFactory
 from .label_convertor import LabelConvertor, LabelConvertorFactory
 
 
 class DatasetConvertor:
     _config: list
+    __name_id_dict: dict[str, int] | None
     __label_convertor_factory: LabelConvertorFactory
+    __image_convertor_factory: ImageConvertorFactory
 
     def __init__(self, config_path: str = ""):
         self._config = []
+        self.__name_id_dict = None
         if config_path:
             self.load_config(config_path)
         self.__label_convertor_factory = LabelConvertorFactory()
+        self.__image_convertor_factory = ImageConvertorFactory()
 
-    def load_config(self, config_path: str):
+    def load_config(self, config_path: str, class_file_path: str | None = None):
         with open(config_path, "r") as file:
             self._config = self.__to_list(yaml.safe_load(file))
+        if not class_file_path:
+            return
+        with open(class_file_path, "r") as file:
+            self.__name_id_dict = self.__to_class_id_dict(yaml.safe_load(file))
 
     def __to_list(self, data: dict | list) -> list:
         if isinstance(data, dict):
             return [data]
         return data
 
+    def __to_class_id_dict(self, yaml_data: dict) -> dict:
+        id_name_dict = yaml_data["names"]
+        return {name: id for id, name in id_name_dict.items()}
+
     def convert(self):
         self.__check_config()
         for each in self._config:
-            source_dir, destination_dir = self.__get_images_dir(each)
-            self.__copy_images(source_dir, destination_dir)
+            img_source_path, img_destination_path = self.__get_images_path(each)
+            label_source_path, label_destination_path = self.__get_labels_path(each)
 
-            source_dir, destination_dir = self.__get_labels_dir(each)
             label_convertor = self.__get_label_convertor(each)
-            self.__convert_labels(source_dir, destination_dir, label_convertor)
+            image_convertor = self.__get_image_convertor(each)
+
+            image_convertor.convert_images(
+                img_source_path,
+                img_destination_path,
+                label_convertor.get_img_name_list(label_source_path),
+            )
+            label_convertor.convert_labels(
+                label_source_path, label_destination_path, self.__name_id_dict
+            )
 
     def __check_config(self):
         if not self._config:
             raise NameError("Config is empty")
 
-    def __get_images_dir(self, config: dict) -> tuple[str, str]:
-        source_dir = config["img_dir"]
-        destination_dir = os.path.join(config["out_dir"], "images", config["data_type"])
-        return source_dir, destination_dir
+    def __get_images_path(self, config: dict) -> tuple[str, str]:
+        source_path = config["img"]
+        destination_path = os.path.join(config["out"], "images", config["data_type"])
+        return source_path, destination_path
 
-    def __copy_images(self, source_dir: str, destination_dir: str):
-        os.makedirs(destination_dir, exist_ok=True)
-        images = os.listdir(source_dir)
-        for image in images:
-            image_path = os.path.join(source_dir, image)
-            shutil.copy(image_path, destination_dir)
-
-    def __get_labels_dir(self, config: dict) -> tuple[str, str]:
-        source_dir = config["label_dir"]
-        destination_dir = os.path.join(config["out_dir"], "labels", config["data_type"])
-        return source_dir, destination_dir
+    def __get_labels_path(self, config: dict) -> tuple[str, str]:
+        source_path = config["label"]
+        destination_path = os.path.join(config["out"], "labels", config["data_type"])
+        return source_path, destination_path
 
     def __get_label_convertor(self, config: dict) -> LabelConvertor:
         label_type = config["label_type"]
         return self.__label_convertor_factory.get_convertor(label_type)
 
-    def __convert_labels(
-        self, source_dir: str, destination_dir: str, label_convertor: LabelConvertor
-    ):
-        os.makedirs(destination_dir, exist_ok=True)
-        files = os.listdir(source_dir)
-        for file in files:
-            source_file_path = os.path.join(source_dir, file)
-            destination_file_path = os.path.join(
-                destination_dir, self.__get_file_name(file) + ".txt"
-            )
-            with open(source_file_path, "r") as f:
-                file_content = label_convertor.convert(f)
-            with open(destination_file_path, "w") as f:
-                f.write(file_content)
-
-    def __get_file_name(self, file: str) -> str:
-        return os.path.splitext(file)[0]
+    def __get_image_convertor(self, config: dict) -> ImageConvertor:
+        label_type = config["label_type"]
+        return self.__image_convertor_factory.get_convertor(label_type)

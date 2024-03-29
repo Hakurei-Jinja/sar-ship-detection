@@ -1,0 +1,10 @@
+- data_type: train
+  label_type: coco
+  img: ./tests/test_dataset/original/coco/images
+  label: ./tests/test_dataset/original/coco/annotations/train.json
+  out: ./tests/test_dataset/converted/coco/01
+- data_type: test
+  label_type: coco
+  img: ./tests/test_dataset/original/coco/images
+  label: ./tests/test_dataset/original/coco/annotations/test.json
+  out: ./tests/test_dataset/converted/coco/01
