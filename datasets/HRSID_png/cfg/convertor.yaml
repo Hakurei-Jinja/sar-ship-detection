@@ -13,12 +13,12 @@
   img: ./datasets/HRSID_png/original/images
   label: ./datasets/HRSID_png/original/annotations/test2017.json
   out: ./datasets/HRSID_png/converted/all
-- data_type: test
+- data_type: train_and_test
   label_type: coco
   img: ./datasets/HRSID_png/original/images
   label: ./datasets/HRSID_png/original/inshore_offshore/inshore.json
   out: ./datasets/HRSID_png/converted/inshore
-- data_type: test
+- data_type: train_and_test
   label_type: coco
   img: ./datasets/HRSID_png/original/images
   label: ./datasets/HRSID_png/original/inshore_offshore/offshore.json
