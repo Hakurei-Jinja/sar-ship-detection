@@ -4,6 +4,7 @@ import yaml
 
 from .image_convertor import ImageConvertor, ImageConvertorFactory
 from .label_convertor import LabelConvertor, LabelConvertorFactory
+from .image_lister import ImageLister, ImageListerFactory
 
 
 class DatasetConvertor:
@@ -11,6 +12,7 @@ class DatasetConvertor:
     __name_id_dict: dict[str, int] | None
     __label_convertor_factory: LabelConvertorFactory
     __image_convertor_factory: ImageConvertorFactory
+    __image_lister_factory: ImageListerFactory
 
     def __init__(self, config_path: str = ""):
         self._config = []
@@ -19,6 +21,7 @@ class DatasetConvertor:
             self.load_config(config_path)
         self.__label_convertor_factory = LabelConvertorFactory()
         self.__image_convertor_factory = ImageConvertorFactory()
+        self.__image_lister_factory = ImageListerFactory()
 
     def load_config(self, config_path: str, class_file_path: str | None = None):
         with open(config_path, "r") as file:
@@ -43,13 +46,14 @@ class DatasetConvertor:
             img_source_path, img_destination_path = self.__get_images_path(each)
             label_source_path, label_destination_path = self.__get_labels_path(each)
 
-            label_convertor = self.__get_label_convertor(each)
             image_convertor = self.__get_image_convertor(each)
+            img_list = self.__get_image_lister(each)
+            label_convertor = self.__get_label_convertor(each)
 
             image_convertor.convert_images(
                 img_source_path,
                 img_destination_path,
-                label_convertor.get_img_name_list(label_source_path),
+                img_list.get_img_name_list(label_source_path),
             )
             label_convertor.convert_labels(
                 label_source_path, label_destination_path, self.__name_id_dict
@@ -76,3 +80,7 @@ class DatasetConvertor:
     def __get_image_convertor(self, config: dict) -> ImageConvertor:
         label_type = config["label_type"]
         return self.__image_convertor_factory.get_convertor(label_type)
+
+    def __get_image_lister(self, config: dict) -> ImageLister:
+        label_type = config["label_type"]
+        return self.__image_lister_factory.get_lister(label_type)

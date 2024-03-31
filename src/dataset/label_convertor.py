@@ -17,31 +17,14 @@ class LabelConvertor(metaclass=ABCMeta):
     ):
         pass
 
-    @abstractmethod
-    def get_img_name_list(self, source_path: str) -> list[str]:
-        pass
-
 
 class VOCLabelConvertor(LabelConvertor):
     __xml_parser: XMLParser
-    __class_id_dict: dict[str, int]
+    __class_id_dict: dict[str, int] | None
 
     def __init__(self):
         self.__xml_parser = XMLParser()
-        self.__class_id_dict = {}
-
-    def get_img_name_list(self, source_path: str) -> list[str]:
-        img_name_list = []
-        files = os.listdir(source_path)
-        for file in files:
-            source_file_path = os.path.join(source_path, file)
-            with open(source_file_path, "r") as f:
-                img_name_list.append(self.__get_img_name(f))
-        return img_name_list
-
-    def __get_img_name(self, file: TextIOWrapper) -> str:
-        xml_root = self.__xml_parser.get_xml_root(file)
-        return self.__xml_parser.get_xml_text(xml_root, "filename")
+        self.__class_id_dict = None
 
     def convert_labels(
         self,
@@ -49,13 +32,13 @@ class VOCLabelConvertor(LabelConvertor):
         destination_path: str,
         cls_id_dict: dict[str, int] | None = None,
     ):
-        self.__check_load_class_id_dict(cls_id_dict)
+        self.__class_id_dict = cls_id_dict
+        self.__check_class_id_dict()
         self.__convert_from_path(source_path, destination_path)
 
-    def __check_load_class_id_dict(self, name_id_dict: dict[str, int] | None):
-        if not name_id_dict:
+    def __check_class_id_dict(self):
+        if not self.__class_id_dict:
             raise NameError("VOC label convertor needs class id file")
-        self.__class_id_dict = name_id_dict
 
     def __convert_from_path(self, source_path: str, destination_path: str):
         os.makedirs(destination_path, exist_ok=True)
@@ -84,7 +67,7 @@ class VOCLabelConvertor(LabelConvertor):
             box = self.__get_box(obj)
             yolo_box = self.__convert_to_yolo_box(size, box)
             class_name = self.__xml_parser.get_xml_text(obj, "name")
-            class_id = self.__class_id_dict[class_name]
+            class_id = self.__class_id_dict[class_name]  # type: ignore
             converted_file = converted_file + self.__generate_yolo_label(
                 class_id, yolo_box
             )
@@ -130,22 +113,14 @@ class VOCLabelConvertor(LabelConvertor):
 
 
 class COCOLabelConvertor(LabelConvertor):
-    __file_map: dict[str, list[str]]
     __img_map: dict[int, dict]
-    __id_remap: dict[int, int]
+    __annotations: list[dict]
+    __id_remap: dict[int, int] | None
 
     def __init__(self):
-        self.__file_map = {}
         self.__img_map = {}
-        self.__id_remap = {}
-
-    def get_img_name_list(self, source_path: str) -> list[str]:
-        cfg = self.__get_cfg(source_path)
-        return [x["file_name"] for x in cfg["images"]]
-
-    def __get_cfg(self, source_path: str) -> dict:
-        with open(source_path, "r") as f:
-            return json.load(f)
+        self.__annotations = []
+        self.__id_remap = None
 
     def convert_labels(
         self,
@@ -153,17 +128,17 @@ class COCOLabelConvertor(LabelConvertor):
         destination_path: str,
         cls_id_dict: dict[str, int] | None = None,
     ):
-        cfg = self.__get_cfg(source_path)
-        if cls_id_dict:
-            self.__remap_id(cfg, cls_id_dict)
-        self.__img_map = self.__get_img_map(cfg)
-        for annotation in cfg["annotations"]:
-            self.__convert_single_label(annotation)
-        self.__write_file_map(destination_path)
 
-    def __remap_id(self, cfg: dict, cls_id_dict: dict[str, int]):
-        categories = cfg["categories"]
-        self.__id_remap = {x["id"]: cls_id_dict[x["name"]] for x in categories}
+        cfg = self.__get_cfg(source_path)
+        self.__img_map = self.__get_img_map(cfg)
+        self.__annotations = cfg["annotations"]
+        if cls_id_dict:
+            self.__id_remap = self.__get_id_remap(cfg, cls_id_dict)
+        self.__convert_labels(destination_path)
+
+    def __get_cfg(self, source_path: str) -> dict:
+        with open(source_path, "r") as f:
+            return json.load(f)
 
     def __get_img_map(self, cfg: dict) -> dict[int, dict]:
         img_map = {}
@@ -175,22 +150,32 @@ class COCOLabelConvertor(LabelConvertor):
             }
         return img_map
 
-    def __convert_single_label(self, annotation: dict):
+    def __get_id_remap(self, cfg: dict, cls_id_dict: dict[str, int]):
+        categories = cfg["categories"]
+        return {x["id"]: cls_id_dict[x["name"]] for x in categories}
+
+    def __convert_labels(self, destination_path: str):
+        files = {}
+        for annotation in self.__annotations:
+            name, content = self.__convert_single_label(annotation)
+            if name not in files:
+                files[name] = []
+            files[name].append(content)
+        self.__write_file_map(files, destination_path)
+
+    def __convert_single_label(
+        self,
+        annotation: dict,
+    ) -> tuple[str, str]:
         img_dict = self.__img_map[annotation["image_id"]]
         label_name = self.__get_file_name(img_dict["file_name"]) + ".txt"
 
         size = self.__get_size(img_dict)
         box = self.__get_box(annotation)
-        x, y, w, h = self.__convert_to_yolo_box(size, box)
         cls = self.__get_class_id(annotation)
-
-        self.__set_file_map(label_name, f"{cls} {x} {y} {w} {h}\n")
-
-    def __write_file_map(self, destination_path: str):
-        os.makedirs(destination_path, exist_ok=True)
-        for label_name in self.__file_map:
-            with open(os.path.join(destination_path, label_name), "w") as f:
-                f.writelines(self.__file_map[label_name])
+        x, y, w, h = self.__convert_to_yolo_box(size, box)
+        content = f"{cls} {x} {y} {w} {h}\n"
+        return label_name, content
 
     def __get_file_name(self, file: str) -> str:
         return os.path.splitext(file)[0]
@@ -204,6 +189,11 @@ class COCOLabelConvertor(LabelConvertor):
             for i, x in enumerate(["x_center", "y_center", "width", "height"])
         }
 
+    def __get_class_id(self, annotation: dict) -> int:
+        if self.__id_remap:
+            return self.__id_remap[annotation["category_id"]]
+        return annotation["category_id"]
+
     def __convert_to_yolo_box(
         self, size: dict[str, int], box: dict[str, float]
     ) -> tuple[float, float, float, float]:
@@ -216,15 +206,11 @@ class COCOLabelConvertor(LabelConvertor):
         )
         return x * dw, y * dh, w * dw, h * dh
 
-    def __get_class_id(self, annotation: dict) -> int:
-        if self.__id_remap:
-            return self.__id_remap[annotation["category_id"]]
-        return annotation["category_id"]
-
-    def __set_file_map(self, name: str, content: str):
-        if name not in self.__file_map:
-            self.__file_map[name] = []
-        self.__file_map[name].append(content)
+    def __write_file_map(self, files: dict[str, list[str]], destination_path: str):
+        os.makedirs(destination_path, exist_ok=True)
+        for name in files.keys():
+            with open(os.path.join(destination_path, name), "w") as f:
+                f.writelines(files[name])
 
 
 class LabelConvertorFactory:
