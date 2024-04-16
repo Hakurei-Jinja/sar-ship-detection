@@ -25,10 +25,14 @@ def convert_HRSID():
 
 
 if __name__ == "__main__":
-    # model = MyYOLO("./models/cfg/yolov9c.yaml", verbose=True)
+    # model = MyYOLO("./models/cfg/yolov9.yaml", verbose=True)
     model = MyYOLO("./models/cfg/yolov8.yaml", verbose=True)
+    # model = MyYOLO("./runs/detect/train2/weights/best.pt")
+    # model = MyYOLO("./models/trained/ssdd-yolov8n/weights/best.pt")
 
-    # result = model.train(data="./datasets/HRSID_png/cfg/hrsid_all.yaml", epochs=2000)
+    # result = model.train(
+    #     data="./datasets/HRSID_png/cfg/hrsid_all.yaml", epochs=2000, degrees=90
+    # )
 
     # metrics = model.val(data="./datasets/SSDD/cfg/ssdd_all.yaml")
     # metrics = model.val(data="./datasets/SSDD/cfg/ssdd_inshore.yaml")

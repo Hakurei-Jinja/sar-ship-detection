@@ -3,9 +3,10 @@ from copy import deepcopy
 import torch
 from ultralytics.models import YOLO
 from ultralytics.nn.tasks import BaseModel, yaml_model_load
-from ultralytics.utils import LOGGER
+from ultralytics.utils import LOGGER, RANK
 from ultralytics.utils.loss import v8DetectionLoss
 from ultralytics.utils.torch_utils import initialize_weights, scale_img
+from ultralytics.models.yolo.detect.train import DetectionTrainer
 
 from .modules import Detect, OBB, Pose, Segment
 from .parser import ModelParser
@@ -24,7 +25,17 @@ class MyYOLO(YOLO):
     def task_map(self):
         task_map = super().task_map
         task_map["detect"]["model"] = DetectionModel
+        task_map["detect"]["trainer"] = MyDetectionTrainer
         return task_map
+
+
+class MyDetectionTrainer(DetectionTrainer):
+    def get_model(self, cfg=None, weights=None, verbose=True):  # type: ignore
+        """Return a YOLO detection model."""
+        model = DetectionModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)  # type: ignore
+        if weights:
+            model.load(weights)
+        return model
 
 
 class DetectionModel(BaseModel):
@@ -57,9 +68,9 @@ class DetectionModel(BaseModel):
         """Get the model config from the given config."""
         yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)
         yaml["ch"] = yaml.get("ch", ch)
-        if nc and self.yaml["nc"] != nc:
-            LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
-            self.yaml["nc"] = nc  # override YAML value
+        if nc and yaml["nc"] != nc:
+            LOGGER.info(f"Overriding model.yaml nc={yaml['nc']} with nc={nc}")
+            yaml["nc"] = nc
         return yaml
 
     def __build_strides(self):

@@ -40,20 +40,34 @@ class DefaultLayerParser(LayerParser):
         return layer_cfg.args
 
     def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
-        return layer_cfg.former_ch[-1]
+        return self._get_from_index_ch(layer_cfg)
 
     @staticmethod
     def _repeat_module(module: nn.Module, n) -> nn.Sequential | nn.Module:
         return nn.Sequential(*(module for _ in range(n))) if n > 1 else module
+
+    @staticmethod
+    def _get_from_index_ch(layer_cfg: LayerConfig) -> int:
+        index = layer_cfg.from_index
+        if not isinstance(index, int):
+            raise ValueError("from_index should be an integer")
+        return layer_cfg.former_ch[index]
 
 
 class NNUpSampleParser(DefaultLayerParser):
     pass
 
 
+class ShuffleAttentionParser(DefaultLayerParser):
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
+        ch = self._get_from_index_ch(layer_cfg)
+        groups = make_divisible(layer_cfg.args[0] * model_cfg.width, 8)
+        return [self._get_from_index_ch(layer_cfg), groups]
+
+
 class ConvParser(DefaultLayerParser):
     def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
-        ch_in = layer_cfg.former_ch[-1]
+        ch_in = self._get_from_index_ch(layer_cfg)
         ch_out = self.get_out_channels(model_cfg, layer_cfg)
         return [ch_in, ch_out, *layer_cfg.args[1:]]
 
@@ -66,8 +80,19 @@ class SPPFParser(ConvParser):
     pass
 
 
-class SPPELANParser(ConvParser):
-    pass
+class SPPELANParser(DefaultLayerParser):
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
+        ch_in = self._get_from_index_ch(layer_cfg)
+        ch_out = self.get_out_channels(model_cfg, layer_cfg)
+        ch_mid = layer_cfg.args[1]
+        ch_mid = make_divisible(
+            min(ch_mid, model_cfg.max_channels) * model_cfg.width, 8
+        )
+        return [ch_in, ch_out, ch_mid, *layer_cfg.args[2:]]
+
+    def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
+        ch_out = layer_cfg.args[0]
+        return make_divisible(min(ch_out, model_cfg.max_channels) * model_cfg.width, 8)
 
 
 class RepNCSPELAN4Parser(ConvParser):
@@ -85,7 +110,7 @@ class C2fParser(DefaultLayerParser):
         return self._module_cls(*self.get_args(model_cfg, layer_cfg))
 
     def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
-        ch_in = layer_cfg.former_ch[-1]
+        ch_in = self._get_from_index_ch(layer_cfg)
         ch_out = self.get_out_channels(model_cfg, layer_cfg)
         repeat_num = layer_cfg.repeat_num
         return [ch_in, ch_out, repeat_num, *layer_cfg.args[1:]]
@@ -112,6 +137,9 @@ class DetectParser(DefaultLayerParser):
         args.append([layer_cfg.former_ch[i] for i in from_index])
         return args
 
+    def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
+        return 0
+
 
 class LayerParserFactory:
     @staticmethod
@@ -130,6 +158,8 @@ class LayerParserFactory:
             return C2fParser(module_cls)
         elif module_cls is nn.Upsample:
             return NNUpSampleParser(module_cls)
+        elif module_cls is ShuffleAttention:
+            return ShuffleAttentionParser(module_cls)
         elif module_cls is Concat:
             return ConcatParser(module_cls)
         elif module_cls is Detect:

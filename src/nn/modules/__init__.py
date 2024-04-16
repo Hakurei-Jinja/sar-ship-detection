@@ -1,3 +1,5 @@
+from .attention import ShuffleAttention
+
 # ultralytics modules
 from ultralytics.nn.modules import (
     # block
@@ -123,4 +125,5 @@ __all__ = (
     "CBFuse",
     "CBLinear",
     "Silence",
+    "ShuffleAttention",
 )
