@@ -38,7 +38,9 @@ if __name__ == "__main__":
     # metrics = model.val(data="./datasets/SSDD/cfg/ssdd_inshore.yaml")
     # metrics = model.val(data="./datasets/SSDD/cfg/ssdd_offshore.yaml")
 
-    result = model.train(data="./datasets/SSDD/cfg/ssdd_all.yaml")
+    result = model.train(
+        data="./datasets/SSDD/cfg/ssdd_all.yaml", degrees=90, epochs=2000
+    )
 
     # app = QApplication(sys.argv)
     # form = Window(NPImagePredictor(model))
