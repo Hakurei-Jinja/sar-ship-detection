@@ -1,4 +1,3 @@
-from src.dataset import DatasetConvertor
 from src.nn.model import MyYOLO
 
 

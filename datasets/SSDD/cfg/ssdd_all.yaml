@@ -1,4 +1,4 @@
-path: /home/kurisunya/Documents/Projects/Develop/SAR-ship-detection/datasets/SSDD/converted/all
+path: ../sar-ship-detection/datasets/SSDD/converted/all
 train: images/train
 val: images/val
 test: images/test

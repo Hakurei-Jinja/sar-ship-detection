@@ -119,7 +119,6 @@ class C2fParser(DefaultLayerParser):
 
 class ShuffleAttentionParser(DefaultLayerParser):
     def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
-        ch = self._get_from_index_ch(layer_cfg)
         groups = make_divisible(layer_cfg.args[0] * model_cfg.width, 8)
         return [self._get_from_index_ch(layer_cfg), groups]
 
@@ -166,8 +165,8 @@ class LayerParserFactory:
             return RepNCSPELAN4Parser(module_cls)
         elif module_cls is Concat:
             return ConcatParser(module_cls)
-        elif module_cls is Detect:
-            return DetectParser(module_cls)
         elif module_cls is nn.Upsample:
             return NNUpSampleParser(module_cls)
+        elif module_cls is Detect:
+            return DetectParser(module_cls)
         raise ValueError(f"Unsupported module class: {module_cls}")
