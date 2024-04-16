@@ -1,6 +1,6 @@
 from .attention import ShuffleAttention
+from .spp import ASPP
 
-# ultralytics modules
 from ultralytics.nn.modules import (
     # block
     C1,
@@ -125,5 +125,7 @@ __all__ = (
     "CBFuse",
     "CBLinear",
     "Silence",
+    # custom modules
     "ShuffleAttention",
+    "ASPP",
 )

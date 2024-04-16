@@ -58,13 +58,6 @@ class NNUpSampleParser(DefaultLayerParser):
     pass
 
 
-class ShuffleAttentionParser(DefaultLayerParser):
-    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
-        ch = self._get_from_index_ch(layer_cfg)
-        groups = make_divisible(layer_cfg.args[0] * model_cfg.width, 8)
-        return [self._get_from_index_ch(layer_cfg), groups]
-
-
 class ConvParser(DefaultLayerParser):
     def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
         ch_in = self._get_from_index_ch(layer_cfg)
@@ -77,6 +70,18 @@ class ConvParser(DefaultLayerParser):
 
 
 class SPPFParser(ConvParser):
+    pass
+
+
+class ASPPParser(ConvParser):
+    pass
+
+
+class RepNCSPELAN4Parser(ConvParser):
+    pass
+
+
+class ADownParser(ConvParser):
     pass
 
 
@@ -95,14 +100,6 @@ class SPPELANParser(DefaultLayerParser):
         return make_divisible(min(ch_out, model_cfg.max_channels) * model_cfg.width, 8)
 
 
-class RepNCSPELAN4Parser(ConvParser):
-    pass
-
-
-class ADownParser(ConvParser):
-    pass
-
-
 class C2fParser(DefaultLayerParser):
     def get_module_layer(
         self, model_cfg: ModelConfig, layer_cfg: LayerConfig
@@ -118,6 +115,13 @@ class C2fParser(DefaultLayerParser):
     def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
         ch_out = layer_cfg.args[0]
         return make_divisible(min(ch_out, model_cfg.max_channels) * model_cfg.width, 8)
+
+
+class ShuffleAttentionParser(DefaultLayerParser):
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
+        ch = self._get_from_index_ch(layer_cfg)
+        groups = make_divisible(layer_cfg.args[0] * model_cfg.width, 8)
+        return [self._get_from_index_ch(layer_cfg), groups]
 
 
 class ConcatParser(DefaultLayerParser):
@@ -146,22 +150,24 @@ class LayerParserFactory:
     def get_parser(module_cls: type) -> LayerParser:
         if module_cls is Conv:
             return ConvParser(module_cls)
-        elif module_cls is RepNCSPELAN4:
-            return RepNCSPELAN4Parser(module_cls)
         elif module_cls is ADown:
             return ADownParser(module_cls)
+        elif module_cls is ShuffleAttention:
+            return ShuffleAttentionParser(module_cls)
         elif module_cls is SPPF:
             return SPPFParser(module_cls)
         elif module_cls is SPPELAN:
             return SPPELANParser(module_cls)
+        elif module_cls is ASPP:
+            return ASPPParser(module_cls)
         elif module_cls is C2f:
             return C2fParser(module_cls)
-        elif module_cls is nn.Upsample:
-            return NNUpSampleParser(module_cls)
-        elif module_cls is ShuffleAttention:
-            return ShuffleAttentionParser(module_cls)
+        elif module_cls is RepNCSPELAN4:
+            return RepNCSPELAN4Parser(module_cls)
         elif module_cls is Concat:
             return ConcatParser(module_cls)
         elif module_cls is Detect:
             return DetectParser(module_cls)
+        elif module_cls is nn.Upsample:
+            return NNUpSampleParser(module_cls)
         raise ValueError(f"Unsupported module class: {module_cls}")

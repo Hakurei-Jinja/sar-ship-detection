@@ -87,7 +87,7 @@ class DetectionModel(BaseModel):
             else self.forward(x)
         )
         m.stride = torch.tensor(
-            [s / x.shape[-2] for x in forward(torch.zeros(1, self.yaml["ch"], s, s))]
+            [s / x.shape[-2] for x in forward(torch.zeros(2, self.yaml["ch"], s, s))]
         )  # forward
         self.stride = m.stride
         m.bias_init()  # only run once

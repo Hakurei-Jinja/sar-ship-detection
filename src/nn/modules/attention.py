@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.nn import init
 from torch.nn.parameter import Parameter
 
 
@@ -14,6 +15,21 @@ class ShuffleAttention(nn.Module):
         self.sbias = Parameter(torch.ones(1, c1 // (2 * g), 1, 1))
         self.sigmoid = nn.Sigmoid()
         self.gn = nn.GroupNorm(c1 // (2 * g), c1 // (2 * g))
+        self.init_weights()
+
+    def init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                init.kaiming_normal_(m.weight, mode="fan_out")
+                if m.bias is not None:
+                    init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                init.constant_(m.weight, 1)
+                init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                init.normal_(m.weight, std=0.001)
+                if m.bias is not None:
+                    init.constant_(m.bias, 0)
 
     @staticmethod
     def channel_shuffle(x, groups):
