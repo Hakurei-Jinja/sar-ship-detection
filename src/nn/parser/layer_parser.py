@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 import torch.nn as nn
-from ultralytics.utils.torch_utils import make_divisible
+from ultralytics.utils.torch_utils import deepcopy, make_divisible
 
 from ..modules import *
 from ..utils import LayerConfig, ModelConfig
@@ -18,6 +18,10 @@ class LayerParser(metaclass=ABCMeta):
     def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
         pass
 
+    @abstractmethod
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
+        pass
+
 
 class DefaultLayerParser(LayerParser):
     _module_cls: type
@@ -29,8 +33,11 @@ class DefaultLayerParser(LayerParser):
         self, model_cfg: ModelConfig, layer_cfg: LayerConfig
     ) -> nn.Sequential | nn.Module:
         return self._repeat_module(
-            self._module_cls(*layer_cfg.args), layer_cfg.repeat_num
+            self._module_cls(*self.get_args(model_cfg, layer_cfg)), layer_cfg.repeat_num
         )
+
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
+        return layer_cfg.args
 
     def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
         return layer_cfg.former_ch[-1]
@@ -45,15 +52,10 @@ class NNUpSampleParser(DefaultLayerParser):
 
 
 class ConvParser(DefaultLayerParser):
-    def get_module_layer(
-        self, model_cfg: ModelConfig, layer_cfg: LayerConfig
-    ) -> nn.Sequential | nn.Module:
-        if model_cfg.activation:
-            self._module_cls.default_act = model_cfg.activation
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
         ch_in = layer_cfg.former_ch[-1]
         ch_out = self.get_out_channels(model_cfg, layer_cfg)
-        args = [ch_in, ch_out, *layer_cfg.args[1:]]
-        return self._repeat_module(self._module_cls(*args), layer_cfg.repeat_num)
+        return [ch_in, ch_out, *layer_cfg.args[1:]]
 
     def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
         ch_out = layer_cfg.args[0]
@@ -80,11 +82,13 @@ class C2fParser(DefaultLayerParser):
     def get_module_layer(
         self, model_cfg: ModelConfig, layer_cfg: LayerConfig
     ) -> nn.Sequential | nn.Module:
+        return self._module_cls(*self.get_args(model_cfg, layer_cfg))
+
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
         ch_in = layer_cfg.former_ch[-1]
         ch_out = self.get_out_channels(model_cfg, layer_cfg)
         repeat_num = layer_cfg.repeat_num
-        args = [ch_in, ch_out, repeat_num, *layer_cfg.args[1:]]
-        return self._module_cls(*args)
+        return [ch_in, ch_out, repeat_num, *layer_cfg.args[1:]]
 
     def get_out_channels(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> int:
         ch_out = layer_cfg.args[0]
@@ -100,15 +104,13 @@ class ConcatParser(DefaultLayerParser):
 
 
 class DetectParser(DefaultLayerParser):
-    def get_module_layer(
-        self, model_cfg: ModelConfig, layer_cfg: LayerConfig
-    ) -> nn.Sequential | nn.Module:
-        args = layer_cfg.args
+    def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
+        args = deepcopy(layer_cfg.args)
         from_index = layer_cfg.from_index
         if isinstance(from_index, int):
             from_index = [from_index]
         args.append([layer_cfg.former_ch[i] for i in from_index])
-        return self._module_cls(*layer_cfg.args)
+        return args
 
 
 class LayerParserFactory:

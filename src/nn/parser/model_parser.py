@@ -84,7 +84,7 @@ class ModelParser:
                     "repeat": repeat_num,
                     "params": layer.np,
                     "module": layer_name,
-                    "arguments": str(args),
+                    "arguments": str(layer_parser.get_args(model_cfg, layer_config)),
                 }
             )
         return nn.Sequential(*layers), sorted(savelist)
