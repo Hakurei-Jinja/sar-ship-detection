@@ -73,6 +73,10 @@ class SPPFParser(ConvParser):
     pass
 
 
+class SPPFCSPCParser(ConvParser):
+    pass
+
+
 class ASPPParser(ConvParser):
     pass
 
@@ -155,6 +159,8 @@ class LayerParserFactory:
             return ShuffleAttentionParser(module_cls)
         elif module_cls is SPPF:
             return SPPFParser(module_cls)
+        elif module_cls is SPPFCSPC:
+            return SPPFCSPCParser(module_cls)
         elif module_cls is SPPELAN:
             return SPPELANParser(module_cls)
         elif module_cls is ASPP:

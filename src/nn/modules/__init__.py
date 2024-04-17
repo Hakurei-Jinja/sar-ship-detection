@@ -1,5 +1,5 @@
 from .attention import ShuffleAttention
-from .spp import ASPP
+from .spp import ASPP, SPPFCSPC
 
 from ultralytics.nn.modules import (
     # block
@@ -128,4 +128,5 @@ __all__ = (
     # custom modules
     "ShuffleAttention",
     "ASPP",
+    "SPPFCSPC",
 )
