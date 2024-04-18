@@ -1,15 +1,19 @@
 from copy import deepcopy
 
 import torch
+from torch.nn import Module
 from ultralytics.models import YOLO
-from ultralytics.nn.tasks import BaseModel, yaml_model_load
-from ultralytics.utils import LOGGER, RANK
-from ultralytics.utils.loss import v8DetectionLoss
-from ultralytics.utils.torch_utils import initialize_weights, scale_img
 from ultralytics.models.yolo.detect.train import DetectionTrainer
+from ultralytics.nn.tasks import DetectionModel, yaml_model_load
+from ultralytics.utils import LOGGER, RANK
+from ultralytics.utils.loss import BboxLoss, v8DetectionLoss
+from ultralytics.utils.tal import bbox2dist
+from ultralytics.utils.torch_utils import initialize_weights
 
+from .loss import BboxIoUFactory
 from .modules import Detect, OBB, Pose, Segment
 from .parser import ModelParser
+from .utils import LossConfig
 
 
 class MyYOLO(YOLO):
@@ -24,7 +28,7 @@ class MyYOLO(YOLO):
     @property
     def task_map(self):
         task_map = super().task_map
-        task_map["detect"]["model"] = DetectionModel
+        task_map["detect"]["model"] = MyDetectionModel
         task_map["detect"]["trainer"] = MyDetectionTrainer
         return task_map
 
@@ -32,13 +36,13 @@ class MyYOLO(YOLO):
 class MyDetectionTrainer(DetectionTrainer):
     def get_model(self, cfg=None, weights=None, verbose=True):  # type: ignore
         """Return a YOLO detection model."""
-        model = DetectionModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)  # type: ignore
+        model = MyDetectionModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)  # type: ignore
         if weights:
             model.load(weights)
         return model
 
 
-class DetectionModel(BaseModel):
+class MyDetectionModel(DetectionModel):
     """YOLO detection model."""
 
     model_parser = ModelParser()
@@ -51,7 +55,7 @@ class DetectionModel(BaseModel):
         verbose: bool = True,
     ):  # model, input channels, number of classes
         """Initialize the YOLO detection model with the given config and parameters."""
-        super().__init__()
+        Module.__init__(self)
         self.yaml = self.__get_model_cfg(cfg, ch, nc)
         self.model, self.save = self.model_parser.parse_model(
             deepcopy(self.yaml), ch=self.yaml["ch"], verbose=verbose
@@ -92,42 +96,64 @@ class DetectionModel(BaseModel):
         self.stride = m.stride
         m.bias_init()  # only run once
 
-    def _predict_augment(self, x):
-        """Perform augmentations on input image x and return augmented inference and train outputs."""
-        img_size = x.shape[-2:]  # height, width
-        s = [1, 0.83, 0.67]  # scales
-        f = [None, 3, None]  # flips (2-ud, 3-lr)
-        y = []  # outputs
-        for si, fi in zip(s, f):
-            xi = scale_img(x.flip(fi) if fi else x, si, gs=int(self.stride.max()))
-            yi = super().predict(xi)[0]  # forward
-            yi = self._descale_pred(yi, fi, si, img_size)
-            y.append(yi)
-        y = self._clip_augmented(y)  # clip augmented tails
-        return torch.cat(y, -1), None  # augmented inference, train
-
-    @staticmethod
-    def _descale_pred(p, flips, scale, img_size, dim=1):
-        """De-scale predictions following augmented inference (inverse operation)."""
-        p[:, :4] /= scale  # de-scale
-        x, y, wh, cls = p.split((1, 1, 2, p.shape[dim] - 4), dim)
-        if flips == 2:
-            y = img_size[0] - y  # de-flip ud
-        elif flips == 3:
-            x = img_size[1] - x  # de-flip lr
-        return torch.cat((x, y, wh, cls), dim)
-
-    def _clip_augmented(self, y):
-        """Clip YOLO augmented inference tails."""
-        nl = self.model[-1].nl  # number of detection layers (P3-P5)
-        g = sum(4**x for x in range(nl))  # grid points
-        e = 1  # exclude layer count
-        i = (y[0].shape[-1] // g) * sum(4**x for x in range(e))  # indices
-        y[0] = y[0][..., :-i]  # large
-        i = (y[-1].shape[-1] // g) * sum(4 ** (nl - 1 - x) for x in range(e))  # indices
-        y[-1] = y[-1][..., i:]  # small
-        return y
-
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
-        return v8DetectionLoss(self)
+        return MyDetectionLoss(self, self.__get_loss_cfg(self.yaml))
+
+    @staticmethod
+    def __get_loss_cfg(cfg: dict) -> LossConfig:
+        bbox_loss = cfg.get("bbox_loss", None)
+        inner_ratio = cfg.get("inner_ratio", None)
+        return LossConfig(bbox_loss=bbox_loss, inner_ratio=inner_ratio)
+
+
+class MyDetectionLoss(v8DetectionLoss):
+    def __init__(self, model: Module, loss_cfg: LossConfig):
+        super().__init__(model)
+        device = next(model.parameters()).device
+        m = model.model[-1]
+        self.bbox_loss = MyBboxLoss(
+            m.reg_max - 1,
+            use_dfl=self.use_dfl,
+            loss_cfg=loss_cfg,
+        ).to(device)
+
+
+class MyBboxLoss(BboxLoss):
+
+    def __init__(
+        self,
+        reg_max: int,
+        use_dfl: bool = False,
+        loss_cfg: LossConfig = LossConfig(),
+    ):
+        super().__init__(reg_max=reg_max, use_dfl=use_dfl)
+        self.__bbox_iou = BboxIoUFactory.get_iou(loss_cfg)
+
+    def forward(
+        self,
+        pred_dist,
+        pred_bboxes,
+        anchor_points,
+        target_bboxes,
+        target_scores,
+        target_scores_sum,
+        fg_mask,
+    ):
+        # IoU loss
+        weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
+        iou = self.__bbox_iou(pred_bboxes[fg_mask], target_bboxes[fg_mask])
+        loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
+        # DFL loss
+        if self.use_dfl:
+            target_ltrb = bbox2dist(anchor_points, target_bboxes, self.reg_max)
+            loss_dfl = self.__get_loss_dfl(pred_dist, target_ltrb, weight, fg_mask)
+            loss_dfl = loss_dfl.sum() / target_scores_sum
+        else:
+            loss_dfl = torch.tensor(0.0).to(pred_dist.device)
+        return loss_iou, loss_dfl
+
+    def __get_loss_dfl(self, pred_dist, target_ltrb, weight, fg_mask):
+        pred = pred_dist[fg_mask].view(-1, self.reg_max + 1)
+        target = target_ltrb[fg_mask]
+        return self._df_loss(pred, target) * weight

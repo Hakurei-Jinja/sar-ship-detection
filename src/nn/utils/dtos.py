@@ -29,3 +29,15 @@ class LayerConfig:
 
     def __setitem__(self, key, value):
         setattr(self, key, value)
+
+
+@dataclass
+class LossConfig:
+    bbox_loss: str | None = None
+    inner_ratio: float | None = None
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
