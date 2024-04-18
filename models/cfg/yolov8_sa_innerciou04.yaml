@@ -8,8 +8,8 @@ scales: # model compound scaling constants, i.e. 'model=yolov8n.yaml' will call 
   l: [1.00, 1.00, 512]
   x: [1.00, 1.25, 512]
 
-bbox_loss: InnerSIoU
-inner_ratio: 0.75
+bbox_loss: InnerCIoU
+inner_ratio: 1.1
 
 backbone:
   # [from, repeats, module, args]
