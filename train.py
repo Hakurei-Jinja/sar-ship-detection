@@ -32,9 +32,8 @@ def train_ssdd(path: str):
         translate=0,
         ## enabled data enhancement
         mosaic=1,
-        close_mosaic=10,  # close mosaic in last 10 epochs
+        close_mosaic=30,  # close mosaic in last 30 epochs
         hsv_v=0.4,
-        degrees=45,
         scale=0.5,
         erasing=0.2,
         fliplr=0.5,
