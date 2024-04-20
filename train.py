@@ -38,7 +38,6 @@ def train_ssdd(path: str):
         erasing=0.2,
         fliplr=0.5,
         # others
-        cache=True,
         val=True,
         plots=True,
     )
