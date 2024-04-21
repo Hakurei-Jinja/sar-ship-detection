@@ -1,0 +1,10 @@
+- data_type: train
+  label_type: voc_obb
+  img: ./tests/test_dataset/original/VOCOBB/JPEGImages01
+  label: ./tests/test_dataset/original/VOCOBB/Annotations01
+  out: ./tests/test_dataset/converted/VOCOBB/01
+- data_type: test
+  label_type: voc_obb
+  img: ./tests/test_dataset/original/VOCOBB/JPEGImages02
+  label: ./tests/test_dataset/original/VOCOBB/Annotations02
+  out: ./tests/test_dataset/converted/VOCOBB/01

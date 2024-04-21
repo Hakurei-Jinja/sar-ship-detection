@@ -1,0 +1,5 @@
+data_type: train
+label_type: voc_obb
+img: ./tests/test_dataset/original/VOCOBB/JPEGImages01
+label: ./tests/test_dataset/original/VOCOBB/Annotations01
+out: ./tests/test_dataset/converted/VOCOBB/01

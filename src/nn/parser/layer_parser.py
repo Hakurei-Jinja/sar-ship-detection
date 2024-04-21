@@ -148,6 +148,10 @@ class DetectParser(DefaultLayerParser):
         return 0
 
 
+class OBBParser(DetectParser):
+    pass
+
+
 class LayerParserFactory:
     @staticmethod
     def get_parser(module_cls: type) -> LayerParser:
@@ -175,4 +179,6 @@ class LayerParserFactory:
             return NNUpSampleParser(module_cls)
         elif module_cls is Detect:
             return DetectParser(module_cls)
+        elif module_cls is OBB:
+            return OBBParser(module_cls)
         raise ValueError(f"Unsupported module class: {module_cls}")

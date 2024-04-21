@@ -4,9 +4,10 @@ import torch
 from torch.nn import Module
 from ultralytics.models import YOLO
 from ultralytics.models.yolo.detect.train import DetectionTrainer
+from ultralytics.models.yolo.obb.train import OBBTrainer
 from ultralytics.nn.tasks import DetectionModel, yaml_model_load
 from ultralytics.utils import LOGGER, RANK
-from ultralytics.utils.loss import BboxLoss, v8DetectionLoss
+from ultralytics.utils.loss import BboxLoss, v8DetectionLoss, v8OBBLoss
 from ultralytics.utils.tal import bbox2dist
 from ultralytics.utils.torch_utils import initialize_weights
 
@@ -30,6 +31,8 @@ class MyYOLO(YOLO):
         task_map = super().task_map
         task_map["detect"]["model"] = MyDetectionModel
         task_map["detect"]["trainer"] = MyDetectionTrainer
+        task_map["obb"]["model"] = MyOBBModel
+        task_map["obb"]["trainer"] = MyOBBTrainer
         return task_map
 
 
@@ -37,6 +40,15 @@ class MyDetectionTrainer(DetectionTrainer):
     def get_model(self, cfg=None, weights=None, verbose=True):  # type: ignore
         """Return a YOLO detection model."""
         model = MyDetectionModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)  # type: ignore
+        if weights:
+            model.load(weights)
+        return model
+
+
+class MyOBBTrainer(OBBTrainer):
+    def get_model(self, cfg=None, weights=None, verbose=True):  # type: ignore
+        """Return OBBModel initialized with specified config and weights."""
+        model = MyOBBModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)  # type: ignore
         if weights:
             model.load(weights)
         return model
@@ -157,3 +169,15 @@ class MyBboxLoss(BboxLoss):
         pred = pred_dist[fg_mask].view(-1, self.reg_max + 1)
         target = target_ltrb[fg_mask]
         return self._df_loss(pred, target) * weight
+
+
+class MyOBBModel(MyDetectionModel):
+    """YOLOv8 Oriented Bounding Box (OBB) model."""
+
+    def __init__(self, cfg="yolov8n-obb.yaml", ch=3, nc=None, verbose=True):
+        """Initialize YOLOv8 OBB model with given config and parameters."""
+        super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
+
+    def init_criterion(self):  # type: ignore
+        """Initialize the loss criterion for the model."""
+        return v8OBBLoss(self)

@@ -9,6 +9,14 @@ def convert_SSDD():
     dataset_convertor.convert()
 
 
+def convert_SSDD_OBB():
+    dataset_convertor = DatasetConvertor()
+    dataset_convertor.load_config(
+        "./datasets/SSDD/cfg/convertor_obb.yaml", "./datasets/class.yaml"
+    )
+    dataset_convertor.convert()
+
+
 def convert_HRSID():
     dataset_convertor = DatasetConvertor()
     dataset_convertor.load_config(
@@ -18,4 +26,4 @@ def convert_HRSID():
 
 
 if __name__ == "__main__":
-    convert_SSDD()
+    convert_SSDD_OBB()

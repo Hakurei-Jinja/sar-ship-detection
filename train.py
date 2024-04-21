@@ -6,12 +6,12 @@ def train_ssdd(path: str):
     model = MyYOLO(path, verbose=True)
     model.train(
         # data
-        data="./datasets/SSDD/cfg/ssdd_all.yaml",
+        data="./datasets/SSDD/cfg/ssdd_all_obb.yaml",
         single_cls=True,
         # epochs
         epochs=1000,
         patience=None,
-        batch=128,
+        batch=100,
         # loss weights
         box=7.5,
         cls=0.5,
@@ -55,9 +55,6 @@ def train_models(path: list[str]):
 if __name__ == "__main__":
     train_models(
         [
-            "./models/cfg/yolov8_sa_fix.yaml",
-            "./models/cfg/yolov8_sa_fix2.yaml",
-            "./models/cfg/yolov8_sa_fix3.yaml",
-            "./models/cfg/yolov8_sa_fix4.yaml",
+            "./models/cfg/yolov8_sa_fix_obb.yaml",
         ]
     )

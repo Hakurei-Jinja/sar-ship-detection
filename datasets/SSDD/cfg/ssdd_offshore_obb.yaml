@@ -1,0 +1,7 @@
+path: ../sar-ship-detection/datasets/SSDD/converted/OBB/offshore
+train: images/train
+val: images/test
+test: images/test
+
+names:
+  0: ship

@@ -20,6 +20,18 @@ voc_correct_labels_value = {
         [0.0, 0.53593, 0.76611, 0.02595, 0.14286],
     ],
 }
+
+voc_obb_correct_labels_value = {
+    "000001.txt": [
+        [0.0, 0.51683, 0.14861, 0.6274, 0.13932, 0.64423, 0.44272, 0.53606, 0.45511]
+    ],
+    "000006.txt": [
+        [0.0, 0.19361, 0.46499, 0.35529, 0.36695, 0.37126, 0.41737, 0.20758, 0.51541],
+        [0.0, 0.67665, 0.47619, 0.68263, 0.43697, 0.79042, 0.46499, 0.78643, 0.5042],
+        [0.0, 0.52295, 0.83754, 0.52695, 0.69468, 0.5509, 0.69748, 0.54691, 0.84034],
+    ],
+}
+
 coco_correct_labels_value = {
     "000001.txt": [[0.0, 0.58333, 0.30134, 0.11538, 0.30547]],
     "000006.txt": [
@@ -149,6 +161,59 @@ class TestDatasetConvertor(unittest.TestCase):
         ) as file:
             converted = convert_label_txt(file)
             self.assertEqual(converted, voc_correct_labels_value["000006.txt"])
+
+    # VOCOBB test
+    def test_convert_voc_obb_without_class_file_raise_exception(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCOBB/test_convertor_list.yaml"
+        )
+        with self.assertRaises(NameError):
+            dataset_convertor.convert()
+
+    def test_convert_voc_obb_images(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCOBB/test_convertor_list.yaml",
+            "./tests/test_dataset/cfg/class.yaml",
+        )
+        dataset_convertor.convert()
+        train_imgs = os.listdir("./tests/test_dataset/converted/VOCOBB/01/images/train")
+        test_imgs = os.listdir("./tests/test_dataset/converted/VOCOBB/01/images/test")
+        self.assertTrue(file_list_equal(train_imgs, correct_train_imgs))
+        self.assertTrue(file_list_equal(test_imgs, correct_test_imgs))
+
+    def test_convert_voc_obb_labels_exist(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCOBB/test_convertor_list.yaml",
+            "./tests/test_dataset/cfg/class.yaml",
+        )
+        dataset_convertor.convert()
+        train_labels = os.listdir(
+            "./tests/test_dataset/converted/VOCOBB/01/labels/train"
+        )
+        test_labels = os.listdir("./tests/test_dataset/converted/VOCOBB/01/labels/test")
+        self.assertTrue(file_list_equal(train_labels, correct_train_labels))
+        self.assertTrue(file_list_equal(test_labels, correct_test_labels))
+
+    def test_convert_voc_obb_labels_correct(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCOBB/test_convertor_list.yaml",
+            "./tests/test_dataset/cfg/class.yaml",
+        )
+        dataset_convertor.convert()
+        with open(
+            "./tests/test_dataset/converted/VOCOBB/01/labels/train/000001.txt", "r"
+        ) as f:
+            converted = convert_label_txt(f)
+            self.assertEqual(converted, voc_obb_correct_labels_value["000001.txt"])
+        with open(
+            "./tests/test_dataset/converted/VOCOBB/01/labels/train/000006.txt", "r"
+        ) as file:
+            converted = convert_label_txt(file)
+            self.assertEqual(converted, voc_obb_correct_labels_value["000006.txt"])
 
     # COCO test
     def test_convert_coco_images(self):
