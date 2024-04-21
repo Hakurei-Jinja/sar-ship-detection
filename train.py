@@ -11,7 +11,7 @@ def train_ssdd(path: str):
         # epochs
         epochs=1000,
         patience=None,
-        batch=100,
+        batch=128,
         # loss weights
         box=7.5,
         cls=0.5,
