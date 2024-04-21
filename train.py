@@ -55,13 +55,9 @@ def train_models(path: list[str]):
 if __name__ == "__main__":
     train_models(
         [
-            "./models/cfg/yolov8.yaml",
             "./models/cfg/yolov8_sa_fix.yaml",
-            "./models/cfg/yolov8_sa_fix_innerciou01.yaml",
-            "./models/cfg/yolov8_sa_fix_innerciou02.yaml",
-            "./models/cfg/yolov8_sa_fix_innerciou03.yaml",
-            "./models/cfg/yolov8_sa_fix_innerciou04.yaml",
-            "./models/cfg/yolov8_sa_fix_innerciou05.yaml",
-            "./models/cfg/yolov8_sa_fix_innerciou06.yaml",
+            "./models/cfg/yolov8_sa_fix2.yaml",
+            "./models/cfg/yolov8_sa_fix3.yaml",
+            "./models/cfg/yolov8_sa_fix4.yaml",
         ]
     )

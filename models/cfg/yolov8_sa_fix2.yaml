@@ -39,9 +39,8 @@ head:
   - [[-1, 20], 1, Concat, [1]] # cat head P4
   - [-1, 3, C2f, [512]] # 23 (P4/16-medium)
 
-  - [9, 1, ShuffleAttention, [128]] # 24
-  - [23, 1, Conv, [512, 3, 2]] # 25
-  - [[-1, 24], 1, Concat, [1]] # cat head P5
-  - [-1, 3, C2f, [1024]] # 27 (P5/32-large)
+  - [-1, 1, Conv, [512, 3, 2]] # 24
+  - [[-1, 10], 1, Concat, [1]] # cat head P5
+  - [-1, 3, C2f, [1024]] # 26 (P5/32-large)
 
-  - [[18, 23, 27], 1, Detect, [nc]] # Detect(P3, P4, P5)
+  - [[18, 23, 26], 1, Detect, [nc]] # Detect(P3, P4, P5)
