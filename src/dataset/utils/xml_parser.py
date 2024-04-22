@@ -18,5 +18,10 @@ class XMLParser:
             raise ValueError(f"Tag {tag} text not found")
         return element.find(tag).text  # type: ignore
 
+    def get_text(self, element: ET.Element) -> str:
+        if element.text is None:
+            raise ValueError("Text not found")
+        return element.text
+
     def get_xml_iter(self, element: ET.Element, tag: str) -> ET.Element:
         return element.iter(tag)  # type: ignore

@@ -1,0 +1,7 @@
+path: ../sar-ship-detection/datasets/SSDD/converted/detect/all
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: ship

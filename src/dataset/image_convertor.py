@@ -28,8 +28,10 @@ class ImageConvertorFactory:
     def get_convertor(self, label_type: str) -> ImageConvertor:
         if label_type == "voc":
             return ImageCopyConvertor()
-        if label_type == "voc_obb":
+        elif label_type == "voc_obb":
             return ImageCopyConvertor()
-        if label_type == "coco":
+        elif label_type == "voc_seg":
+            return ImageCopyConvertor()
+        elif label_type == "coco":
             return ImageCopyConvertor()
         raise ValueError("Invalid label type")

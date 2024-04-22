@@ -5,9 +5,15 @@ from torch.nn import Module
 from ultralytics.models import YOLO
 from ultralytics.models.yolo.detect.train import DetectionTrainer
 from ultralytics.models.yolo.obb.train import OBBTrainer
+from ultralytics.models.yolo.segment.train import SegmentationTrainer
 from ultralytics.nn.tasks import DetectionModel, yaml_model_load
 from ultralytics.utils import LOGGER, RANK
-from ultralytics.utils.loss import BboxLoss, v8DetectionLoss, v8OBBLoss
+from ultralytics.utils.loss import (
+    BboxLoss,
+    v8DetectionLoss,
+    v8OBBLoss,
+    v8SegmentationLoss,
+)
 from ultralytics.utils.tal import bbox2dist
 from ultralytics.utils.torch_utils import initialize_weights
 
@@ -33,6 +39,8 @@ class MyYOLO(YOLO):
         task_map["detect"]["trainer"] = MyDetectionTrainer
         task_map["obb"]["model"] = MyOBBModel
         task_map["obb"]["trainer"] = MyOBBTrainer
+        task_map["segment"]["model"] = MySegmentationModel
+        task_map["segment"]["trainer"] = MySegmentationTrainer
         return task_map
 
 
@@ -49,6 +57,15 @@ class MyOBBTrainer(OBBTrainer):
     def get_model(self, cfg=None, weights=None, verbose=True):  # type: ignore
         """Return OBBModel initialized with specified config and weights."""
         model = MyOBBModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)  # type: ignore
+        if weights:
+            model.load(weights)
+        return model
+
+
+class MySegmentationTrainer(SegmentationTrainer):
+    def get_model(self, cfg=None, weights=None, verbose=True):  # type: ignore
+        """Return SegmentationModel initialized with specified config and weights."""
+        model = MySegmentationModel(cfg, nc=self.data["nc"], verbose=verbose and RANK == -1)  # type: ignore
         if weights:
             model.load(weights)
         return model
@@ -181,3 +198,15 @@ class MyOBBModel(MyDetectionModel):
     def init_criterion(self):  # type: ignore
         """Initialize the loss criterion for the model."""
         return v8OBBLoss(self)
+
+
+class MySegmentationModel(MyDetectionModel):
+    """YOLOv8 segmentation model."""
+
+    def __init__(self, cfg="yolov8n-seg.yaml", ch=3, nc=None, verbose=True):
+        """Initialize YOLOv8 segmentation model with given config and parameters."""
+        super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
+
+    def init_criterion(self):  # type: ignore
+        """Initialize the loss criterion for the SegmentationModel."""
+        return v8SegmentationLoss(self)

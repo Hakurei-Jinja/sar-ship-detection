@@ -1,0 +1,10 @@
+- data_type: train
+  label_type: voc_seg
+  img: ./tests/test_dataset/original/VOCSEG/JPEGImages01
+  label: ./tests/test_dataset/original/VOCSEG/Annotations01
+  out: ./tests/test_dataset/converted/VOCSEG/01
+- data_type: test
+  label_type: voc_seg
+  img: ./tests/test_dataset/original/VOCSEG/JPEGImages02
+  label: ./tests/test_dataset/original/VOCSEG/Annotations02
+  out: ./tests/test_dataset/converted/VOCSEG/01

@@ -56,7 +56,7 @@ class NPImagePredictor(NPImageProcessor):
 
     def process(self, image: NPImage) -> NPImage:
         self.__check_image(image)
-        results = self.__model.predict(image.get_image())
+        results = self.__model.predict(image.get_image(), show_labels=False)
         np_image = self.__get_np_image_from_results(results)
         np_image.BGR2RGB()
         return np_image

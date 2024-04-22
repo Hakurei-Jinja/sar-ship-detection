@@ -46,7 +46,9 @@ class ImageListerFactory:
     def get_lister(dataset_type: str) -> ImageLister:
         if dataset_type == "voc":
             return VOCImageLister()
-        if dataset_type == "voc_obb":
+        elif dataset_type == "voc_obb":
+            return VOCImageLister()
+        elif dataset_type == "voc_seg":
             return VOCImageLister()
         elif dataset_type == "coco":
             return COCOImageLister()

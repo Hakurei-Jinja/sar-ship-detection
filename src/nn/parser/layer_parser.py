@@ -152,6 +152,10 @@ class OBBParser(DetectParser):
     pass
 
 
+class SegmentParser(DetectParser):
+    pass
+
+
 class LayerParserFactory:
     @staticmethod
     def get_parser(module_cls: type) -> LayerParser:
@@ -181,4 +185,6 @@ class LayerParserFactory:
             return DetectParser(module_cls)
         elif module_cls is OBB:
             return OBBParser(module_cls)
+        elif module_cls is Segment:
+            return SegmentParser(module_cls)
         raise ValueError(f"Unsupported module class: {module_cls}")

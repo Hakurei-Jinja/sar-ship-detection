@@ -209,6 +209,97 @@ class VOCOBBLabelConvertor(LabelConvertor):
         return " ".join(str(a) for a in (class_id, *yolo_box)) + "\n"
 
 
+class VOCSEGLabelConvertor(LabelConvertor):
+    __xml_parser: XMLParser
+    __class_id_dict: dict[str, int] | None
+
+    def __init__(self):
+        self.__xml_parser = XMLParser()
+        self.__class_id_dict = None
+
+    def convert_labels(
+        self,
+        source_path: str,
+        destination_path: str,
+        cls_id_dict: dict[str, int] | None = None,
+    ):
+        self.__class_id_dict = cls_id_dict
+        self.__check_class_id_dict()
+        self.__convert_from_path(source_path, destination_path)
+
+    def __check_class_id_dict(self):
+        if not self.__class_id_dict:
+            raise NameError("VOC label convertor needs class id file")
+
+    def __convert_from_path(self, source_path: str, destination_path: str):
+        os.makedirs(destination_path, exist_ok=True)
+        files = os.listdir(source_path)
+        for file in files:
+            source_file_path = os.path.join(source_path, file)
+            destination_file_path = os.path.join(
+                destination_path, self.__get_file_name(file) + ".txt"
+            )
+            with open(source_file_path, "r") as f:
+                file_content = self.__convert_from_file(f)
+            with open(destination_file_path, "w") as f:
+                f.write(file_content)
+
+    def __get_file_name(self, file: str) -> str:
+        return os.path.splitext(file)[0]
+
+    def __convert_from_file(self, file: TextIOWrapper) -> str:
+        xml_root = self.__xml_parser.get_xml_root(file)
+
+        converted_file = ""
+        size = self.__get_size(xml_root)
+        for obj in self.__xml_parser.get_xml_iter(xml_root, "object"):
+            if not self.__is_obj_valid(obj):
+                continue
+            box = self.__get_box(obj)
+            yolo_box = self.__convert_to_yolo_box(size, box)
+            class_name = self.__xml_parser.get_xml_text(obj, "name")
+            class_id = self.__class_id_dict[class_name]  # type: ignore
+            converted_file = converted_file + self.__generate_yolo_label(
+                class_id, yolo_box
+            )
+        return converted_file
+
+    def __get_size(self, xml_root: ET.Element) -> dict[str, int]:
+        xml_size = self.__xml_parser.get_xml_element(xml_root, "size")
+        return {
+            x: int(self.__xml_parser.get_xml_text(xml_size, x))
+            for x in ("width", "height")
+        }
+
+    def __is_obj_valid(self, obj: ET.Element) -> bool:
+        cls = self.__xml_parser.get_xml_text(obj, "name")
+        difficult = int(self.__xml_parser.get_xml_text(obj, "difficult"))
+        return (
+            cls == "ship" and difficult != 1
+        )  # difficult equals 1 means the object is difficult to recognize
+
+    def __get_box(self, obj: ET.Element) -> dict[str, float]:
+        xml_box = self.__xml_parser.get_xml_element(obj, "segm")
+        points = self.__xml_parser.get_xml_iter(xml_box, "point")
+        box = {}
+        for i, point in enumerate(points):
+            x, y = self.__xml_parser.get_text(point).replace(" ", "").split(",")
+            box[f"x{i}"], box[f"y{i}"] = float(x), float(y)
+        return box
+
+    def __convert_to_yolo_box(
+        self, size: dict[str, int], box: dict[str, float]
+    ) -> tuple:
+        dw, dh = 1.0 / size["width"], 1.0 / size["height"]
+        yolo_box = []
+        for i in range(len(box) // 2):
+            yolo_box.extend([box[f"x{i}"] * dw, box[f"y{i}"] * dh])
+        return tuple(yolo_box)
+
+    def __generate_yolo_label(self, class_id: int, yolo_box: tuple) -> str:
+        return " ".join(str(a) for a in (class_id, *yolo_box)) + "\n"
+
+
 class COCOLabelConvertor(LabelConvertor):
     __img_map: dict[int, dict]
     __annotations: list[dict]
@@ -316,6 +407,8 @@ class LabelConvertorFactory:
             return VOCLabelConvertor()
         elif label_type == "voc_obb":
             return VOCOBBLabelConvertor()
+        elif label_type == "voc_seg":
+            return VOCSEGLabelConvertor()
         elif label_type == "coco":
             return COCOLabelConvertor()
         raise ValueError("Invalid label type")

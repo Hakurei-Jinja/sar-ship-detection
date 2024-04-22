@@ -32,6 +32,25 @@ voc_obb_correct_labels_value = {
     ],
 }
 
+voc_seg_correct_labels_value = {
+    # fmt: off
+    "000001.txt": [
+        [ 0.0, 0.54327, 0.22291, 0.53846, 0.17647, 0.54567, 0.14861,
+          0.5649, 0.1517, 0.57212, 0.17647, 0.58654, 0.2291, 0.61298,
+          0.2322, 0.62019, 0.28173, 0.63942, 0.32817, 0.61779, 0.40867,
+          0.60577, 0.44892, 0.57452, 0.45201, 0.5625, 0.42415, 0.54567,
+          0.39319, 0.53125, 0.36533, 0.53125, 0.31269, 0.52404, 0.23839]
+    ],
+    "000006.txt": [
+        [0.0, 0.2016, 0.47059, 0.33533, 0.38095, 0.36527, 0.39496,
+         0.35529, 0.42857, 0.22954, 0.5042, 0.20359, 0.4986],
+        [0.0, 0.68064, 0.45938, 0.69661, 0.44258, 0.78643, 0.46499,
+         0.79042, 0.47899, 0.77645, 0.5014, 0.70858, 0.48459],
+        [0.0, 0.53693, 0.69748, 0.52495, 0.82073, 0.5489, 0.84034, 0.5509, 0.71989],
+    ],
+    # fmt: on
+}
+
 coco_correct_labels_value = {
     "000001.txt": [[0.0, 0.58333, 0.30134, 0.11538, 0.30547]],
     "000006.txt": [
@@ -214,6 +233,59 @@ class TestDatasetConvertor(unittest.TestCase):
         ) as file:
             converted = convert_label_txt(file)
             self.assertEqual(converted, voc_obb_correct_labels_value["000006.txt"])
+
+    # VOCSEG test
+    def test_convert_voc_seg_without_class_file_raise_exception(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCSEG/test_convertor_list.yaml"
+        )
+        with self.assertRaises(NameError):
+            dataset_convertor.convert()
+
+    def test_convert_voc_seg_images(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCSEG/test_convertor_list.yaml",
+            "./tests/test_dataset/cfg/class.yaml",
+        )
+        dataset_convertor.convert()
+        train_imgs = os.listdir("./tests/test_dataset/converted/VOCSEG/01/images/train")
+        test_imgs = os.listdir("./tests/test_dataset/converted/VOCSEG/01/images/test")
+        self.assertTrue(file_list_equal(train_imgs, correct_train_imgs))
+        self.assertTrue(file_list_equal(test_imgs, correct_test_imgs))
+
+    def test_convert_voc_seg_labels_exist(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCSEG/test_convertor_list.yaml",
+            "./tests/test_dataset/cfg/class.yaml",
+        )
+        dataset_convertor.convert()
+        train_labels = os.listdir(
+            "./tests/test_dataset/converted/VOCSEG/01/labels/train"
+        )
+        test_labels = os.listdir("./tests/test_dataset/converted/VOCSEG/01/labels/test")
+        self.assertTrue(file_list_equal(train_labels, correct_train_labels))
+        self.assertTrue(file_list_equal(test_labels, correct_test_labels))
+
+    def test_convert_voc_seg_labels_correct(self):
+        dataset_convertor = DatasetConvertor()
+        dataset_convertor.load_config(
+            "./tests/test_dataset/cfg/VOCSEG/test_convertor_list.yaml",
+            "./tests/test_dataset/cfg/class.yaml",
+        )
+        dataset_convertor.convert()
+        with open(
+            "./tests/test_dataset/converted/VOCSEG/01/labels/train/000001.txt", "r"
+        ) as f:
+            converted = convert_label_txt(f)
+            self.assertEqual(converted, voc_seg_correct_labels_value["000001.txt"])
+        with open(
+            "./tests/test_dataset/converted/VOCSEG/01/labels/train/000006.txt", "r"
+        ) as file:
+            converted = convert_label_txt(file)
+            self.assertEqual(converted, voc_seg_correct_labels_value["000006.txt"])
 
     # COCO test
     def test_convert_coco_images(self):
