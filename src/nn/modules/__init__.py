@@ -1,5 +1,7 @@
+from .conv import DeformConv
+from .block import DeformC2f
+from .spp import ASPP, SPPFCSPC, DeformSPPF
 from .attention import ShuffleAttention
-from .spp import ASPP, SPPFCSPC
 
 from ultralytics.nn.modules import (
     # block
@@ -129,4 +131,7 @@ __all__ = (
     "ShuffleAttention",
     "ASPP",
     "SPPFCSPC",
+    "DeformConv",
+    "DeformC2f",
+    "DeformSPPF",
 )

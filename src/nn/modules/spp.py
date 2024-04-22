@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from ultralytics.nn.modules.conv import Conv
+from .conv import DeformConv
 
 
 class ASPPConv(nn.Sequential):
@@ -92,3 +93,25 @@ class SPPFCSPC(nn.Module):
         y1 = self.cv6(self.cv5(torch.cat((x1, x2, x3, self.m(x3)), 1)))
         y2 = self.cv2(x)
         return self.cv7(torch.cat((y1, y2), dim=1))
+
+
+class DeformSPPF(nn.Module):
+    """Spatial Pyramid Pooling - Fast (SPPF) layer for YOLOv5 by Glenn Jocher."""
+
+    def __init__(self, c1, c2, k=5):
+        """
+        Initializes the SPPF layer with given input/output channels and kernel size.
+
+        This module is equivalent to SPP(k=(5, 9, 13)).
+        """
+        super().__init__()
+        c_ = c1 // 2  # hidden channels
+        self.cv1 = DeformConv(c1, c_, 1, 1)
+        self.cv2 = DeformConv(c_ * 4, c2, 1, 1)
+        self.m = nn.MaxPool2d(kernel_size=k, stride=1, padding=k // 2)
+
+    def forward(self, x):
+        """Forward pass through Ghost Convolution block."""
+        y = [self.cv1(x)]
+        y.extend(self.m(y[-1]) for _ in range(3))
+        return self.cv2(torch.cat(y, 1))

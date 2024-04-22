@@ -69,7 +69,15 @@ class ConvParser(DefaultLayerParser):
         return make_divisible(min(ch_out, model_cfg.max_channels) * model_cfg.width, 8)
 
 
+class DeformConvParser(ConvParser):
+    pass
+
+
 class SPPFParser(ConvParser):
+    pass
+
+
+class DeformSPPFParser(ConvParser):
     pass
 
 
@@ -121,6 +129,10 @@ class C2fParser(DefaultLayerParser):
         return make_divisible(min(ch_out, model_cfg.max_channels) * model_cfg.width, 8)
 
 
+class DeformC2fParser(C2fParser):
+    pass
+
+
 class ShuffleAttentionParser(DefaultLayerParser):
     def get_args(self, model_cfg: ModelConfig, layer_cfg: LayerConfig) -> list:
         groups = make_divisible(layer_cfg.args[0] * model_cfg.width, 8)
@@ -161,12 +173,16 @@ class LayerParserFactory:
     def get_parser(module_cls: type) -> LayerParser:
         if module_cls is Conv:
             return ConvParser(module_cls)
+        elif module_cls is DeformConv:
+            return DeformConvParser(module_cls)
         elif module_cls is ADown:
             return ADownParser(module_cls)
         elif module_cls is ShuffleAttention:
             return ShuffleAttentionParser(module_cls)
         elif module_cls is SPPF:
             return SPPFParser(module_cls)
+        elif module_cls is DeformSPPF:
+            return DeformSPPFParser(module_cls)
         elif module_cls is SPPFCSPC:
             return SPPFCSPCParser(module_cls)
         elif module_cls is SPPELAN:
@@ -175,6 +191,8 @@ class LayerParserFactory:
             return ASPPParser(module_cls)
         elif module_cls is C2f:
             return C2fParser(module_cls)
+        elif module_cls is DeformC2f:
+            return DeformC2fParser(module_cls)
         elif module_cls is RepNCSPELAN4:
             return RepNCSPELAN4Parser(module_cls)
         elif module_cls is Concat:

@@ -69,9 +69,6 @@ class HyperParameters:
     dfl: float = 1.5
     pose: float = 12.0
     kobj: float = 1.0
-    #
-    label_smoothing: float = 0.0
-    nbs: int = 64
     # data enhancement
     hsv_h: float = 0.015
     hsv_s: float = 0.7
@@ -90,6 +87,9 @@ class HyperParameters:
     auto_augment: str = "randaugment"
     erasing: float = 0.4
     crop_fraction: float = 1.0
+    # other
+    label_smoothing: float = 0.0
+    nbs: int = 64
 
     dict = asdict
 
@@ -160,10 +160,10 @@ if __name__ == "__main__":
 
     # ssdd_trainer.train(
     #     [
-    #         "./models/cfg/detect/yolov8.yaml",
-    #         "./models/cfg/detect/yolov8-sa1.yaml",
-    #         "./models/cfg/detect/yolov8-sa2.yaml",
-    #         "./models/cfg/detect/yolov8-sa3.yaml",
+    #          "./models/cfg/detect/yolov8.yaml",
+    #          "./models/cfg/detect/yolov8-sa1.yaml",
+    #          "./models/cfg/detect/yolov8-sa2.yaml",
+    #          "./models/cfg/detect/yolov8-sa3.yaml",
     #     ]
     # )
     # ssdd_obb_trainer.train(

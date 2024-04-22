@@ -8,7 +8,7 @@ from src.nn.model import MyYOLO
 
 
 if __name__ == "__main__":
-    model = MyYOLO("./models/trained/v8n/weights/best.pt", verbose=True)
+    model = MyYOLO("./models/trained/obb/train3/weights/best.pt", verbose=True)
     app = QApplication(sys.argv)
     form = Window(NPImagePredictor(model))
     form.show()
