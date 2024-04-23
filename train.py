@@ -158,14 +158,16 @@ if __name__ == "__main__":
         "./datasets/SSDD/cfg/seg/ssdd_all_seg.yaml", ssdd_train_cfg, ssdd_hyper_params
     )
 
-    # ssdd_trainer.train(
-    #     [
-    #          "./models/cfg/detect/yolov8.yaml",
-    #          "./models/cfg/detect/yolov8-sa1.yaml",
-    #          "./models/cfg/detect/yolov8-sa2.yaml",
-    #          "./models/cfg/detect/yolov8-sa3.yaml",
-    #     ]
-    # )
+    ssdd_trainer.train(
+        [
+            # "./models/cfg/detect/yolov8.yaml",
+            # "./models/cfg/detect/yolov8-sa1.yaml",
+            # "./models/cfg/detect/yolov8-sa2.yaml",
+            # "./models/cfg/detect/yolov8-sa3.yaml",
+            "./models/cfg/detect/yolov8-dc1.yaml",
+            "./models/cfg/detect/yolov8-dc2.yaml",
+        ]
+    )
     # ssdd_obb_trainer.train(
     #     [
     #         "./models/cfg/obb/yolov8-obb.yaml",
