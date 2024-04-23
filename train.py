@@ -158,16 +158,17 @@ if __name__ == "__main__":
         "./datasets/SSDD/cfg/seg/ssdd_all_seg.yaml", ssdd_train_cfg, ssdd_hyper_params
     )
 
-    # ssdd_trainer.train(
-    #     [
-    #         "./models/cfg/detect/v8n.yaml",
-    #         "./models/cfg/detect/v8n-sa1.yaml",
-    #         "./models/cfg/detect/v8n-sa2.yaml",
-    #         "./models/cfg/detect/v8s.yaml",
-    #         "./models/cfg/detect/v8s-sa1.yaml",
-    #         "./models/cfg/detect/v8s-sa2.yaml",
-    #     ]
-    # )
+    ssdd_trainer.train(
+        [
+            # "./models/cfg/detect/v8n.yaml",
+            # "./models/cfg/detect/v8n-sa1.yaml",
+            # "./models/cfg/detect/v8n-sa2.yaml",
+            # "./models/cfg/detect/v8s.yaml",
+            # "./models/cfg/detect/v8s-sa1.yaml",
+            # "./models/cfg/detect/v8s-sa2.yaml",
+            "./models/cfg/detect/v8n-dc.yaml",
+        ]
+    )
     # ssdd_obb_trainer.train(
     #     [
     #         "./models/cfg/obb/v8n.yaml",
