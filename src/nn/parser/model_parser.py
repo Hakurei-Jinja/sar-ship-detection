@@ -164,8 +164,9 @@ class ModelParser:
 
     def __get_cfg_params(self, cfg: dict) -> tuple[float, float, float]:
         scales = cfg.get("scales")
+        scale = cfg.get("scale") or cfg.get("use")
         if scales:
-            return self.__get_scale_params(scales, cfg.get("scale"))
+            return self.__get_scale_params(scales, scale)
         return self.__get_default_params(cfg)
 
     def __get_scale_params(
