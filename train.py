@@ -158,29 +158,33 @@ if __name__ == "__main__":
         "./datasets/SSDD/cfg/seg/ssdd_all_seg.yaml", ssdd_train_cfg, ssdd_hyper_params
     )
 
-    ssdd_trainer.train(
-        [
-            # "./models/cfg/detect/yolov8.yaml",
-            # "./models/cfg/detect/yolov8-sa1.yaml",
-            # "./models/cfg/detect/yolov8-sa2.yaml",
-            # "./models/cfg/detect/yolov8-sa3.yaml",
-            "./models/cfg/detect/yolov8-dc1.yaml",
-            "./models/cfg/detect/yolov8-dc2.yaml",
-        ]
-    )
+    # ssdd_trainer.train(
+    #     [
+    #         "./models/cfg/detect/v8n.yaml",
+    #         "./models/cfg/detect/v8n-sa1.yaml",
+    #         "./models/cfg/detect/v8n-sa2.yaml",
+    #         "./models/cfg/detect/v8s.yaml",
+    #         "./models/cfg/detect/v8s-sa1.yaml",
+    #         "./models/cfg/detect/v8s-sa2.yaml",
+    #     ]
+    # )
     # ssdd_obb_trainer.train(
     #     [
-    #         "./models/cfg/obb/yolov8-obb.yaml",
-    #         "./models/cfg/obb/yolov8-sa1-obb.yaml",
-    #         "./models/cfg/obb/yolov8-sa2-obb.yaml",
-    #         "./models/cfg/obb/yolov8-sa3-obb.yaml",
+    #         "./models/cfg/obb/v8n.yaml",
+    #         "./models/cfg/obb/v8n-sa1.yaml",
+    #         "./models/cfg/obb/v8n-sa2.yaml",
+    #         "./models/cfg/obb/v8s.yaml",
+    #         "./models/cfg/obb/v8s-sa1.yaml",
+    #         "./models/cfg/obb/v8s-sa2.yaml",
     #     ]
     # )
     # ssdd_seg_trainer.train(
     #     [
-    #         "./models/cfg/seg/yolov8-seg.yaml",
-    #         "./models/cfg/seg/yolov8-sa1-seg.yaml",
-    #         "./models/cfg/seg/yolov8-sa2-seg.yaml",
-    #         "./models/cfg/seg/yolov8-sa3-seg.yaml",
+    #         "./models/cfg/seg/v8n.yaml",
+    #         "./models/cfg/seg/v8n-sa1.yaml",
+    #         "./models/cfg/seg/v8n-sa2.yaml",
+    #         "./models/cfg/seg/v8s.yaml",
+    #         "./models/cfg/seg/v8s-sa1.yaml",
+    #         "./models/cfg/seg/v8s-sa2.yaml",
     #     ]
     # )
