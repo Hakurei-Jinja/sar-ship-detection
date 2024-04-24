@@ -1,5 +1,6 @@
 import ast
 import contextlib
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
@@ -65,7 +66,7 @@ class ModelParser:
             repeat_num = self.__calculate_repeat_num(repeat_num, model_cfg.depth)
             args = [self.__convert_arg(arg, model_cfg) for arg in args]
             layer_config = self.__rewrite_layer_cfg_by_index(
-                i, ch, LayerConfig(former_ch, from_index, repeat_num, args)
+                i, ch, LayerConfig(deepcopy(former_ch), from_index, repeat_num, args)
             )
 
             layer_parser = LayerParserFactory.get_parser(module)

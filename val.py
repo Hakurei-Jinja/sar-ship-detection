@@ -24,8 +24,7 @@ def seg_val(path: str):
 
 if __name__ == "__main__":
     detect_val("./models/pt/detect/v8n/weights/best.pt")
-    detect_val("./models/pt/detect/v8n-sa1/weights/best.pt")
-    detect_val("./models/pt/detect/v8n-sa2/weights/best.pt")
+    # detect_val("./models/pt/detect/v8n-sa1/weights/best.pt")
 
     # obb_val("./models/pt/obb/v8n/weights/best.pt")
     # obb_val("./models/pt/obb/v8n-sa1/weights/best.pt")

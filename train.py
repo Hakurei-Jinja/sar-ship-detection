@@ -136,9 +136,8 @@ class Trainer:
 
 ssdd_train_cfg = TrainConfig(
     single_cls=True,
-    epochs=1000,
-    # batch=100,
-    close_mosaic=30,
+    epochs=2000,
+    batch=64,
 )
 ssdd_hyper_params = HyperParameters(
     hsv_h=0,
@@ -163,10 +162,10 @@ if __name__ == "__main__":
             # "./models/cfg/detect/v8n.yaml",
             # "./models/cfg/detect/v8n-sa1.yaml",
             # "./models/cfg/detect/v8n-sa2.yaml",
+            # "./models/cfg/detect/v8n-sa3.yaml",
             # "./models/cfg/detect/v8s.yaml",
             # "./models/cfg/detect/v8s-sa1.yaml",
             # "./models/cfg/detect/v8s-sa2.yaml",
-            "./models/cfg/detect/v8n-dc.yaml",
         ]
     )
     # ssdd_obb_trainer.train(
