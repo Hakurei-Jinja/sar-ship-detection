@@ -162,7 +162,7 @@ if __name__ == "__main__":
             # "./models/cfg/detect/v8n.yaml",
             # "./models/cfg/detect/v8n-sa1.yaml",
             # "./models/cfg/detect/v8n-sa2.yaml",
-            # "./models/cfg/detect/v8n-sa3.yaml",
+            "./models/cfg/detect/v8n-sa4.yaml",
             # "./models/cfg/detect/v8s.yaml",
             # "./models/cfg/detect/v8s-sa1.yaml",
             # "./models/cfg/detect/v8s-sa2.yaml",

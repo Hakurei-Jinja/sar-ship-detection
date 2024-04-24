@@ -1,3 +1,3 @@
-from .np_image import NPImagePredictor
+from .np_image import NPImagePredictor, NPImageHeatmap
 
-__all__ = ["NPImagePredictor"]
+__all__ = ["NPImagePredictor", "NPImageHeatmap"]
