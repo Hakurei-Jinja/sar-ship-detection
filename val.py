@@ -24,14 +24,7 @@ def seg_val(path: str):
 
 if __name__ == "__main__":
     # detect_val("./models/pt/detect/v8n/weights/best.pt")
-    # detect_val("./models/pt/detect/v8n-sa1/weights/best.pt")
-    # detect_val("./models/pt/detect/v8s/weights/best.pt")
-    detect_val("./models/pt/detect/train/weights/best.pt")
-
-    # obb_val("./models/pt/obb/v8n/weights/best.pt")
-    # obb_val("./models/pt/obb/v8n-sa1/weights/best.pt")
-    # obb_val("./models/pt/obb/v8n-sa2/weights/best.pt")
-
-    # seg_val("./models/pt/seg/v8n/weights/best.pt")
-    # seg_val("./models/pt/seg/v8n-sa1/weights/best.pt")
-    # seg_val("./models/pt/seg/v8n-sa2/weights/best.pt")
+    # detect_val("./models/pt/detect/v8n-sa/weights/best.pt")
+    # detect_val("./models/pt/detect/v8n-dc/weights/best.pt")
+    # detect_val("./models/pt/detect/v8n-sa-dc/weights/best.pt")
+    detect_val("./models/pt/tmp/train/weights/last.pt")
