@@ -160,30 +160,21 @@ if __name__ == "__main__":
     ssdd_trainer.train(
         [
             # "./models/cfg/detect/v8n.yaml",
-            "./models/cfg/detect/v8n-sa1.yaml",
-            "./models/cfg/detect/v8n-sa2.yaml",
+            # "./models/cfg/detect/v8n-sa.yaml",
+            "./models/cfg/detect/v8n-dc.yaml",
+            "./models/cfg/detect/v8n-sa-dc.yaml",
             # "./models/cfg/detect/v8s.yaml",
-            # "./models/cfg/detect/v8s-sa1.yaml",
-            # "./models/cfg/detect/v8s-sa2.yaml",
         ]
     )
     # ssdd_obb_trainer.train(
     #     [
     #         "./models/cfg/obb/v8n.yaml",
-    #         "./models/cfg/obb/v8n-sa1.yaml",
-    #         "./models/cfg/obb/v8n-sa2.yaml",
     #         "./models/cfg/obb/v8s.yaml",
-    #         "./models/cfg/obb/v8s-sa1.yaml",
-    #         "./models/cfg/obb/v8s-sa2.yaml",
     #     ]
     # )
     # ssdd_seg_trainer.train(
     #     [
     #         "./models/cfg/seg/v8n.yaml",
-    #         "./models/cfg/seg/v8n-sa1.yaml",
-    #         "./models/cfg/seg/v8n-sa2.yaml",
     #         "./models/cfg/seg/v8s.yaml",
-    #         "./models/cfg/seg/v8s-sa1.yaml",
-    #         "./models/cfg/seg/v8s-sa2.yaml",
     #     ]
     # )

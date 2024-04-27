@@ -17,7 +17,7 @@ class DeformConv(nn.Module):
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         super().__init__()
-        self.conv = DeformConvV2(c1, c2, k, s, autopad(k, p, d), d, g, bias=False)  # type: ignore
+        self.conv = DeformConvV3(c1, c2, k, s, autopad(k, p, d), d, g, bias=False)  # type: ignore
         self.bn = nn.BatchNorm2d(c2)
         self.act = (
             self.default_act
@@ -42,11 +42,11 @@ class DeformConvV1(nn.Module):
         p: int | tuple[int, int] = 0,
         d: int | tuple[int, int] = 1,
         g: int = 1,
+        offset_g: int = 1,
         bias: bool = True,
     ):
         super().__init__()
-        kh, kw = self.__get_kernel_size(k)
-        self.offset_conv = nn.Conv2d(c1, 2 * kh * kw, k, s, p, d)
+        self.offset_conv = nn.Conv2d(c1, self.__get_offset_c2(k, offset_g), k, s, p, d)
         self.deform_conv = DeformConv2d(c1, c2, k, s, p, d, g, bias)  # type: ignore
         self.__init_weights()
 
@@ -55,6 +55,11 @@ class DeformConvV1(nn.Module):
 
     def __init_weights(self):
         self.offset_conv.weight = nn.init.zeros_(self.offset_conv.weight)
+
+    @staticmethod
+    def __get_offset_c2(k: int | tuple[int, int], g: int) -> int:
+        kh, kw = DeformConvV1.__get_kernel_size(k)
+        return 2 * kh * kw * g
 
     @staticmethod
     def __get_kernel_size(k) -> tuple:
@@ -71,12 +76,12 @@ class DeformConvV2(nn.Module):
         p: int | tuple[int, int] = 0,
         d: int | tuple[int, int] = 1,
         g: int = 1,
+        offset_g: int = 1,
         bias: bool = True,
     ):
         super().__init__()
-        kh, kw = self.__get_kernel_size(k)
-        self.offset_conv = nn.Conv2d(c1, 2 * kh * kw, k, s, p, d)
-        self.mask_conv = nn.Conv2d(c1, kh * kw, k, s, p, d)
+        self.offset_conv = nn.Conv2d(c1, self.__get_offset_c2(k, offset_g), k, s, p, d)
+        self.mask_conv = nn.Conv2d(c1, self.__get_mask_c2(k, offset_g), k, s, p, d)
         self.deform_conv = DeformConv2d(c1, c2, k, s, p, d, g, bias)  # type: ignore
         self.__init_weights()
 
@@ -86,6 +91,62 @@ class DeformConvV2(nn.Module):
 
     def __init_weights(self):
         self.offset_conv.weight = nn.init.zeros_(self.offset_conv.weight)
+
+    @staticmethod
+    def __get_offset_c2(k: int | tuple[int, int], g: int) -> int:
+        kh, kw = DeformConvV2.__get_kernel_size(k)
+        return 2 * kh * kw * g
+
+    @staticmethod
+    def __get_mask_c2(k: int | tuple[int, int], g: int) -> int:
+        kh, kw = DeformConvV2.__get_kernel_size(k)
+        return kh * kw * g
+
+    @staticmethod
+    def __get_kernel_size(k) -> tuple:
+        return k if isinstance(k, tuple) else (k, k)
+
+
+class DeformConvV3(nn.Module):
+    def __init__(
+        self,
+        c1: int,
+        c2: int,
+        k: int | tuple[int, int],
+        s: int | tuple[int, int] = 1,
+        p: int | tuple[int, int] = 0,
+        d: int | tuple[int, int] = 1,
+        g: int = 1,
+        offset_g: int = 1,
+        bias: bool = True,
+    ):
+        super().__init__()
+        offset_c2 = self.__get_offset_c2(k, offset_g)
+        mask_c2 = self.__get_mask_c2(k, offset_g)
+        self.offset_conv = nn.Conv2d(c1, offset_c2, k, s, p, d)
+        self.mask_conv = nn.Conv2d(c1, mask_c2, k, s, p, d)
+        self.deform_conv = DeformConv2d(c1, c2, k, s, p, d, g, bias)  # type: ignore
+        self.conv1x1 = nn.Conv2d(c2 + offset_c2 + mask_c2, c2, 1)
+        self.__init_weights()
+
+    def forward(self, x):
+        offset = self.offset_conv(x)
+        mask = torch.sigmoid(self.mask_conv(x))
+        x = self.deform_conv(x, offset, mask)
+        return self.conv1x1(torch.cat([x, offset, mask], dim=1))
+
+    def __init_weights(self):
+        self.offset_conv.weight = nn.init.zeros_(self.offset_conv.weight)
+
+    @staticmethod
+    def __get_offset_c2(k: int | tuple[int, int], g: int) -> int:
+        kh, kw = DeformConvV3.__get_kernel_size(k)
+        return 2 * kh * kw * g
+
+    @staticmethod
+    def __get_mask_c2(k: int | tuple[int, int], g: int) -> int:
+        kh, kw = DeformConvV3.__get_kernel_size(k)
+        return kh * kw * g
 
     @staticmethod
     def __get_kernel_size(k) -> tuple:
