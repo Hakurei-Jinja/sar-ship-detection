@@ -31,4 +31,4 @@ if __name__ == "__main__":
     # detect_val("./models/pt/detect/v8n-sh-sa/weights/best.pt")
     # detect_val("./models/pt/detect/v8n-sh-dc/weights/best.pt")
     # detect_val("./models/pt/detect/v8n-sh-sa-dc/weights/best.pt")
-    detect_val("./models/pt/tmp/train/weights/last.pt")
+    detect_val("./models/pt/tmp/train/weights/best.pt")
