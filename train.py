@@ -163,10 +163,11 @@ if __name__ == "__main__":
             # "./models/cfg/detect/v8n-sa.yaml",
             # "./models/cfg/detect/v8n-dc.yaml",
             # "./models/cfg/detect/v8n-sa-dc.yaml",
-            "./models/cfg/detect/v8n-sh.yaml",
-            "./models/cfg/detect/v8n-sh-sa.yaml",
-            "./models/cfg/detect/v8n-sh-dc.yaml",
-            "./models/cfg/detect/v8n-sh-sa-dc.yaml",
+            # "./models/cfg/detect/v8n-sh.yaml",
+            # "./models/cfg/detect/v8n-sh-sa.yaml",
+            # "./models/cfg/detect/v8n-sh-dc.yaml",
+            # "./models/cfg/detect/v8n-sh-sa-dc.yaml",
+            "./models/cfg/detect/v8n-sc.yaml",
         ]
     )
     # ssdd_obb_trainer.train(
