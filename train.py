@@ -134,12 +134,12 @@ class Trainer:
         )
 
 
-ssdd_train_cfg = TrainConfig(
+train_cfg = TrainConfig(
     single_cls=True,
     epochs=2000,
     batch=64,
 )
-ssdd_hyper_params = HyperParameters(
+hyper_params = HyperParameters(
     hsv_h=0,
     hsv_s=0,
     translate=0,
@@ -148,38 +148,39 @@ ssdd_hyper_params = HyperParameters(
 
 if __name__ == "__main__":
     ssdd_trainer = Trainer(
-        "./datasets/SSDD/cfg/detect/ssdd_all.yaml", ssdd_train_cfg, ssdd_hyper_params
+        "./datasets/SSDD/cfg/detect/ssdd_all.yaml", train_cfg, hyper_params
     )
     ssdd_obb_trainer = Trainer(
-        "./datasets/SSDD/cfg/obb/ssdd_all_obb.yaml", ssdd_train_cfg, ssdd_hyper_params
+        "./datasets/SSDD/cfg/obb/ssdd_all_obb.yaml", train_cfg, hyper_params
     )
     ssdd_seg_trainer = Trainer(
-        "./datasets/SSDD/cfg/seg/ssdd_all_seg.yaml", ssdd_train_cfg, ssdd_hyper_params
+        "./datasets/SSDD/cfg/seg/ssdd_all_seg.yaml", train_cfg, hyper_params
+    )
+    hrsid_trainer = Trainer(
+        "./datasets/HRSID_png/cfg/hrsid_all.yaml", train_cfg, hyper_params
     )
 
-    ssdd_trainer.train(
+    # ssdd_trainer.train(
+    #     [
+    #         # "./models/cfg/detect/v8n.yaml",
+    #         # "./models/cfg/detect/v8n-sa.yaml",
+    #         # "./models/cfg/detect/v8n-dc.yaml",
+    #         # "./models/cfg/detect/v8n-sa-dc.yaml",
+    #         # "./models/cfg/detect/v8n-sh.yaml",
+    #         # "./models/cfg/detect/v8n-sh-sa.yaml",
+    #         # "./models/cfg/detect/v8n-sh-dc.yaml",
+    #         # "./models/cfg/detect/v8n-sh-sa-dc.yaml",
+    #     ]
+    # )
+    hrsid_trainer.train(
         [
-            # "./models/cfg/detect/v8n.yaml",
-            # "./models/cfg/detect/v8n-sa.yaml",
-            # "./models/cfg/detect/v8n-dc.yaml",
-            # "./models/cfg/detect/v8n-sa-dc.yaml",
-            # "./models/cfg/detect/v8n-sh.yaml",
-            "./models/cfg/detect/v8n-sh1.yaml",
-            "./models/cfg/detect/v8n-sh2.yaml",
-            "./models/cfg/detect/v8n-sh3.yaml",
-            # "./models/cfg/detect/v8n-sh-sa.yaml",
-            # "./models/cfg/detect/v8n-sh-dc.yaml",
-            # "./models/cfg/detect/v8n-sh-sa-dc.yaml",
-            # "./models/cfg/detect/v8n-sc.yaml",
+            "./models/cfg/detect/v8n.yaml",
+            "./models/cfg/detect/v8n-sa.yaml",
+            "./models/cfg/detect/v8n-dc.yaml",
+            "./models/cfg/detect/v8n-sa-dc.yaml",
+            "./models/cfg/detect/v8n-sh.yaml",
+            "./models/cfg/detect/v8n-sh-sa.yaml",
+            "./models/cfg/detect/v8n-sh-dc.yaml",
+            "./models/cfg/detect/v8n-sh-sa-dc.yaml",
         ]
     )
-    # ssdd_obb_trainer.train(
-    #     [
-    #         "./models/cfg/obb/v8n.yaml",
-    #     ]
-    # )
-    # ssdd_seg_trainer.train(
-    #     [
-    #         "./models/cfg/seg/v8n.yaml",
-    #     ]
-    # )
