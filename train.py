@@ -160,27 +160,29 @@ if __name__ == "__main__":
         "./datasets/HRSID_png/cfg/hrsid_all.yaml", train_cfg, hyper_params
     )
 
-    # ssdd_trainer.train(
-    #     [
-    #         # "./models/cfg/detect/v8n.yaml",
-    #         # "./models/cfg/detect/v8n-sa.yaml",
-    #         # "./models/cfg/detect/v8n-dc.yaml",
-    #         # "./models/cfg/detect/v8n-sa-dc.yaml",
-    #         # "./models/cfg/detect/v8n-sh.yaml",
-    #         # "./models/cfg/detect/v8n-sh-sa.yaml",
-    #         # "./models/cfg/detect/v8n-sh-dc.yaml",
-    #         # "./models/cfg/detect/v8n-sh-sa-dc.yaml",
-    #     ]
-    # )
-    hrsid_trainer.train(
+    ssdd_trainer.train(
         [
-            "./models/cfg/detect/v8n.yaml",
-            "./models/cfg/detect/v8n-sa.yaml",
-            "./models/cfg/detect/v8n-dc.yaml",
-            "./models/cfg/detect/v8n-sa-dc.yaml",
-            "./models/cfg/detect/v8n-sh.yaml",
-            "./models/cfg/detect/v8n-sh-sa.yaml",
-            "./models/cfg/detect/v8n-sh-dc.yaml",
-            "./models/cfg/detect/v8n-sh-sa-dc.yaml",
+            # "./models/cfg/detect/v8n.yaml",
+            # "./models/cfg/detect/v8n-sa.yaml",
+            # "./models/cfg/detect/v8n-dc.yaml",
+            # "./models/cfg/detect/v8n-sa-dc.yaml",
+            # "./models/cfg/detect/v8n-sh.yaml",
+            # "./models/cfg/detect/v8n-sh-sa.yaml",
+            # "./models/cfg/detect/v8n-sh-dc.yaml",
+            # "./models/cfg/detect/v8n-sh-sa-dc.yaml",
+            "./models/cfg/detect/v8n-dw.yaml",
+            "./models/cfg/detect/v8n-dc2.yaml",
         ]
     )
+    # hrsid_trainer.train(
+    #     [
+    #         "./models/cfg/detect/v8n.yaml",
+    #         "./models/cfg/detect/v8n-sa.yaml",
+    #         "./models/cfg/detect/v8n-dc.yaml",
+    #         "./models/cfg/detect/v8n-sa-dc.yaml",
+    #         "./models/cfg/detect/v8n-sh.yaml",
+    #         "./models/cfg/detect/v8n-sh-sa.yaml",
+    #         "./models/cfg/detect/v8n-sh-dc.yaml",
+    #         "./models/cfg/detect/v8n-sh-sa-dc.yaml",
+    #     ]
+    # )

@@ -69,6 +69,10 @@ class ConvParser(DefaultLayerParser):
         return make_divisible(min(ch_out, model_cfg.max_channels) * model_cfg.width, 8)
 
 
+class DWConvParser(ConvParser):
+    pass
+
+
 class DeformConvParser(ConvParser):
     pass
 
@@ -173,6 +177,8 @@ class LayerParserFactory:
     def get_parser(module_cls: type) -> LayerParser:
         if module_cls is Conv:
             return ConvParser(module_cls)
+        elif module_cls is DWConv:
+            return DWConvParser(module_cls)
         elif module_cls is DeformConv:
             return DeformConvParser(module_cls)
         elif module_cls is ADown:
