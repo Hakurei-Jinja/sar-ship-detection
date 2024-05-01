@@ -1,4 +1,4 @@
-from .conv import DeformConv
+from .conv import DeformConv, DeformConvOld
 from .block import DeformC2f
 from .spp import ASPP, SPPFCSPC, DeformSPPF
 from .attention import ShuffleAttention
@@ -132,6 +132,7 @@ __all__ = (
     "ASPP",
     "SPPFCSPC",
     "DeformConv",
+    "DeformConvOld",
     "DeformC2f",
     "DeformSPPF",
 )

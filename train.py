@@ -170,8 +170,8 @@ if __name__ == "__main__":
             # "./models/cfg/detect/v8n-sh-sa.yaml",
             # "./models/cfg/detect/v8n-sh-dc.yaml",
             # "./models/cfg/detect/v8n-sh-sa-dc.yaml",
-            "./models/cfg/detect/v8n-dw.yaml",
-            "./models/cfg/detect/v8n-dc2.yaml",
+            "./models/cfg/detect/v8n-dco.yaml",
+            "./models/cfg/detect/v8n-sh-dco.yaml",
         ]
     )
     # hrsid_trainer.train(

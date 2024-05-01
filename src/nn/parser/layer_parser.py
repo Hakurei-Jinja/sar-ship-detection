@@ -77,6 +77,10 @@ class DeformConvParser(ConvParser):
     pass
 
 
+class DeformConvOldParser(ConvParser):
+    pass
+
+
 class SPPFParser(ConvParser):
     pass
 
@@ -181,6 +185,8 @@ class LayerParserFactory:
             return DWConvParser(module_cls)
         elif module_cls is DeformConv:
             return DeformConvParser(module_cls)
+        elif module_cls is DeformConvOld:
+            return DeformConvOldParser(module_cls)
         elif module_cls is ADown:
             return ADownParser(module_cls)
         elif module_cls is ShuffleAttention:
