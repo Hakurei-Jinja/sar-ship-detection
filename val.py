@@ -30,14 +30,14 @@ def hrsid_detect_val(path: str):
 ssdd_prefix = "./models/pt/ssdd"
 hrsid_prefix = "./models/pt/hrsid"
 if __name__ == "__main__":
-    # ssdd_detect_val(ssdd_prefix + "/detect/v8n/weights/best.pt")
+    ssdd_detect_val(ssdd_prefix + "/detect/v8n/weights/best.pt")
     # ssdd_detect_val(ssdd_prefix + "/detect/v8n-sa/weights/best.pt")
-    # ssdd_detect_val(ssdd_prefix + "/detect/v8n-dc/weights/best.pt")
+    ssdd_detect_val(ssdd_prefix + "/detect/v8n-dc/weights/best.pt")
     # ssdd_detect_val(ssdd_prefix + "/detect/v8n-sa-dc/weights/best.pt")
     # ssdd_detect_val(ssdd_prefix + "/detect/v8n-sh/weights/best.pt")
     # ssdd_detect_val(ssdd_prefix + "/detect/v8n-sh-sa/weights/best.pt")
-    # ssdd_detect_val(ssdd_prefix + "/detect/v8n-sh-dc/weights/best.pt")
+    ssdd_detect_val(ssdd_prefix + "/detect/v8n-sh-dc/weights/best.pt")
     # ssdd_detect_val(ssdd_prefix + "/detect/v8n-sh-sa-dc/weights/best.pt")
 
-    ssdd_detect_val(ssdd_prefix + "/tmp/train/weights/best.pt")
+    # ssdd_detect_val(ssdd_prefix + "/tmp/train/weights/best.pt")
     # hrsid_detect_val(hrsid_prefix + "/tmp/train/weights/best.pt")
