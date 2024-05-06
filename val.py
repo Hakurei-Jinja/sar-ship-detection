@@ -3,16 +3,16 @@ from src.nn.model import MyYOLO
 
 def ssdd_detect_val(path: str):
     model = MyYOLO(path, verbose=True)
-    model.val(data="./datasets/SSDD/cfg/detect/ssdd_all.yaml")
-    model.val(data="./datasets/SSDD/cfg/detect/ssdd_inshore.yaml")
-    model.val(data="./datasets/SSDD/cfg/detect/ssdd_offshore.yaml")
+    model.val(data="./datasets/SSDD/cfg/detect/ssdd_all.yaml", plots=True)
+    model.val(data="./datasets/SSDD/cfg/detect/ssdd_inshore.yaml", plots=True)
+    model.val(data="./datasets/SSDD/cfg/detect/ssdd_offshore.yaml", plots=True)
 
 
 def ssdd_obb_val(path: str):
     model = MyYOLO(path, verbose=True)
-    model.val(data="./datasets/SSDD/cfg/obb/ssdd_all_obb.yaml")
-    model.val(data="./datasets/SSDD/cfg/obb/ssdd_inshore_obb.yaml")
-    model.val(data="./datasets/SSDD/cfg/obb/ssdd_offshore_obb.yaml")
+    model.val(data="./datasets/SSDD/cfg/obb/ssdd_all_obb.yaml", plots=True)
+    model.val(data="./datasets/SSDD/cfg/obb/ssdd_inshore_obb.yaml", plots=True)
+    model.val(data="./datasets/SSDD/cfg/obb/ssdd_offshore_obb.yaml", plots=True)
 
 
 if __name__ == "__main__":

@@ -1,70 +1,200 @@
+from dataclasses import asdict, dataclass
+
 from PIL import Image
-from PySide6.QtWidgets import (
-    QFileDialog,
-    QHBoxLayout,
-    QLabel,
-    QMessageBox,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
-from .utils.np_image import NPImage, NPImageProcessor, NPImageProcessError
+from ..nn.model import MyYOLO
+from .predictor import Predictor, PredictorConfig
+from .ui import Ui_MainWindow
+from .utils import ModelConfig, NPImage
 
 
-class ImageOpenError(Exception):
-    def __init__(self, message: str):
-        super().__init__(message)
+@dataclass
+class ModelItem:
+    predictor: Predictor
+    structure_img: NPImage
+    train_img: NPImage
+    eval_img: NPImage
+
+    __getitem__ = lambda self, key: getattr(self, key)
+    __setitem__ = lambda self, key, value: setattr(self, key, value)
+    dict = asdict
 
 
-class Window(QWidget):
+class ModelItemList:
+    __models: list[ModelItem]
 
-    __image_processor: NPImageProcessor
+    def __init__(self, models: list[ModelConfig]):
+        self.__models = [
+            ModelItem(
+                predictor=Predictor(MyYOLO(model.path)),
+                structure_img=NPImage(Image.open(model.structure_img_path)),
+                train_img=NPImage(Image.open(model.train_img_path)),
+                eval_img=NPImage(Image.open(model.eval_img_path)),
+            )
+            for model in models
+        ]
 
-    def __init__(self, image_processor: NPImageProcessor):
-        self.__image_processor = image_processor
+    def get_predictor(self, index: int) -> Predictor:
+        return self.__models[index].predictor
 
-        super(Window, self).__init__()
-        self.button = QPushButton("Pick Picture")
-        self.img_raw = QLabel(self)
-        self.img_processed = QLabel(self)
+    def get_structure_img(self, index: int) -> NPImage:
+        return self.__models[index].structure_img
 
-        vertical_layout = QVBoxLayout()
-        horizon_layout = QHBoxLayout()
-        vertical_layout.addWidget(self.button)
-        horizon_layout.addWidget(self.img_raw)
-        horizon_layout.addWidget(self.img_processed)
-        vertical_layout.addLayout(horizon_layout)
-        self.setLayout(vertical_layout)
+    def get_train_img(self, index: int) -> NPImage:
+        return self.__models[index].train_img
 
-        self.button.clicked.connect(self.__button_callback)
+    def get_eval_img(self, index: int) -> NPImage:
+        return self.__models[index].eval_img
 
-    def __button_callback(self):
+
+class MainWindow(QMainWindow):
+    __raw_img: NPImage | None = None
+    __raw_img_qt: QPixmap | None = None
+    __result_img_qt: QPixmap | None = None
+    __model_item_list: ModelItemList
+
+    __scale_strategy = {
+        "aspectMode": Qt.AspectRatioMode.KeepAspectRatio,
+        "mode": Qt.TransformationMode.SmoothTransformation,
+    }
+
+    def resizeEvent(self, event):
+        self.__update_imgs()
+
+    def __update_imgs(self):
+        if self.ui.tabWidget.currentIndex() == 0:
+            self.__update_result_tab_img()
+        elif self.ui.tabWidget.currentIndex() == 1:
+            self.__update_structure_tab_img()
+        elif self.ui.tabWidget.currentIndex() == 2:
+            self.__update_train_tab_img()
+        elif self.ui.tabWidget.currentIndex() == 3:
+            self.__update_eval_tab_img()
+
+    def __update_result_tab_img(self):
+        layout_size = self.ui.resultTab.size()
+        result_tab_size = QSize(layout_size.width(), int(layout_size.height() / 2) - 2)
+        if self.__raw_img_qt:
+            self.ui.rawLabel.setPixmap(
+                self.__raw_img_qt.scaled(result_tab_size, **self.__scale_strategy)
+            )
+        if self.__result_img_qt:
+            self.ui.resultLabel.setPixmap(
+                self.__result_img_qt.scaled(result_tab_size, **self.__scale_strategy)
+            )
+
+    def __update_structure_tab_img(self):
+        layout_size = self.ui.structureTab.size()
+        structure_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
+        self.ui.structureLabel.setPixmap(
+            self.__model_item_list.get_structure_img(
+                self.ui.modelComboBox.currentIndex()
+            )
+            .get_Qt_pixmap()
+            .scaled(structure_tab_size, **self.__scale_strategy)
+        )
+
+    def __update_train_tab_img(self):
+        layout_size = self.ui.trainTab.size()
+        train_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
+        self.ui.trainLabel.setPixmap(
+            self.__model_item_list.get_train_img(self.ui.modelComboBox.currentIndex())
+            .get_Qt_pixmap()
+            .scaled(train_tab_size, **self.__scale_strategy)
+        )
+
+    def __update_eval_tab_img(self):
+        layout_size = self.ui.evalTab.size()
+        eval_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
+        self.ui.evalLabel.setPixmap(
+            self.__model_item_list.get_eval_img(self.ui.modelComboBox.currentIndex())
+            .get_Qt_pixmap()
+            .scaled(eval_tab_size, **self.__scale_strategy)
+        )
+
+    def __init__(self, models: list[ModelConfig]):
+        super().__init__()
+        self.ui = Ui_MainWindow()
+        self.__model_item_list = ModelItemList(models)
+        self.__init_ui(models)
+        self.__connect_all()
+
+    def __init_ui(self, models: list[ModelConfig]):
+        self.ui.setupUi(self)
+        self.ui.modelComboBox.addItems([model.name for model in models])
+        self.__update_imgs()
+
+    def __connect_all(self):
+        self.ui.tabWidget.currentChanged.connect(self.__update_imgs)
+        self.ui.modelComboBox.currentIndexChanged.connect(self.__update_imgs)
+
+        self.ui.selectButton.clicked.connect(self.__select_button_callback)
+        self.ui.processButton.clicked.connect(self.__process_button_callback)
+
+        self.ui.confSlider.valueChanged.connect(self.__conf_slider_callback)
+        self.ui.confSpinBox.valueChanged.connect(self.__confSpinBox_callback)
+        self.ui.iouSlider.valueChanged.connect(self.__iou_slider_callback)
+        self.ui.iouSpinBox.valueChanged.connect(self.__iouSpinBox_callback)
+        self.ui.labelCheckBox.checkStateChanged.connect(self.__label_checkbox_callback)
+        self.ui.confCheckBox.checkStateChanged.connect(self.__conf_checkbox_callback)
+
+    def __conf_slider_callback(self, value):
+        self.ui.confSpinBox.setValue(value / self.ui.confSlider.maximum())
+
+    def __confSpinBox_callback(self, value):
+        self.ui.confSlider.setValue(round(value * self.ui.confSlider.maximum()))
+
+    def __iou_slider_callback(self, value):
+        self.ui.iouSpinBox.setValue(value / self.ui.iouSlider.maximum())
+
+    def __iouSpinBox_callback(self, value):
+        self.ui.iouSlider.setValue(round(value * self.ui.iouSlider.maximum()))
+
+    def __label_checkbox_callback(self, state):
+        if state == Qt.CheckState.Unchecked:
+            self.ui.confCheckBox.setChecked(False)
+
+    def __conf_checkbox_callback(self, state):
+        if state == Qt.CheckState.Checked:
+            self.ui.labelCheckBox.setChecked(True)
+
+    def __select_button_callback(self):
         try:
-            image_raw_np = self.__select_image()
-            image_processed_np = self.__process_image(image_raw_np)
-        except ImageOpenError or NPImageProcessError:
-            return
-
-        self.img_raw.setPixmap(image_raw_np.get_Qt_pixmap())
-        self.img_processed.setPixmap(image_processed_np.get_Qt_pixmap())
+            self.__raw_img = self.__select_image()
+            self.__raw_img_qt = self.__raw_img.get_Qt_pixmap()
+            self.__update_imgs()
+        except:
+            QMessageBox.critical(self, "Error", "加载图片图像")
 
     def __select_image(self) -> NPImage:
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open Image", "", "Image Files (*.png *.jpg *.jpeg)"
         )
-        return self.__open_image(file_path)
+        return NPImage(Image.open(file_path))
 
-    def __open_image(self, file_path: str) -> NPImage:
+    def __process_button_callback(self):
+        if not self.__raw_img:
+            QMessageBox.critical(self, "Error", "请先选择图像")
+            return
         try:
-            return NPImage(Image.open(file_path))
+            predictor = self.__model_item_list.get_predictor(
+                self.ui.modelComboBox.currentIndex()
+            )
+            result_img = predictor.predict(self.__raw_img, self.__get_predict_config())
+            self.__result_img_qt = result_img.get_Qt_pixmap()
+            self.__update_imgs()
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
-            raise ImageOpenError(str(e))
 
-    def __process_image(self, image: NPImage) -> NPImage:
-        try:
-            return self.__image_processor.process(image)
-        except NPImageProcessError as e:
-            QMessageBox.critical(self, "Error", str(e))
-            raise e
+    def __get_predict_config(self):
+        return PredictorConfig(
+            conf=self.ui.confSpinBox.value(),
+            iou=self.ui.iouSpinBox.value(),
+            augment=self.ui.augmentCheckBox.isChecked(),
+            show_labels=self.ui.labelCheckBox.isChecked(),
+            show_conf=self.ui.confCheckBox.isChecked(),
+            save=self.ui.saveCheckBox.isChecked(),
+        )

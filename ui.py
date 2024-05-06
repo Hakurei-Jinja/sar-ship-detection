@@ -1,15 +1,36 @@
-import sys
+from src.gui.utils import ModelConfig
+from src.gui.app import App
 
-from PySide6.QtWidgets import QApplication
+ssdd_prefix = "./models/pt/ssdd/"
+models = [
+    "detect/v8n",
+    "detect/v8n-dc",
+    "detect/v8n-sh",
+    "detect/v8n-sh-dc",
+    "detect/v8s",
+    "obb/v8n",
+    "obb/v8n-dc",
+    "obb/v8n-sh",
+    "obb/v8n-sh-dc",
+    "obb/v8s",
+]
+weights = "/weights/best.pt"
+structure_img = "/results.png"
+train_img = "/results.png"
+eval_img = "/PR_curve.png"
 
-from src.gui.utils import NPImagePredictor, NPImageHeatmap
-from src.gui.window import Window
-from src.nn.model import MyYOLO
 
+model_configs = [
+    ModelConfig(
+        name=model,
+        path=ssdd_prefix + model + weights,
+        structure_img_path=ssdd_prefix + model + structure_img,
+        train_img_path=ssdd_prefix + model + train_img,
+        eval_img_path=ssdd_prefix + model + eval_img,
+    )
+    for model in models
+]
 
 if __name__ == "__main__":
-    model = MyYOLO("./models/pt/ssdd/detect/v8n-sh-dc/weights/best.pt", verbose=True)
-    app = QApplication(sys.argv)
-    form = Window(NPImagePredictor(model))
-    form.show()
-    sys.exit(app.exec())
+    app = App(model_configs)
+    app.run()

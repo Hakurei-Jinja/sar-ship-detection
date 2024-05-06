@@ -1,3 +1,4 @@
-from .np_image import NPImagePredictor, NPImageHeatmap
+from .dtos import ModelConfig
+from .np_image import NPImage
 
-__all__ = ["NPImagePredictor", "NPImageHeatmap"]
+__all__ = ["ModelConfig", "NPImage"]
