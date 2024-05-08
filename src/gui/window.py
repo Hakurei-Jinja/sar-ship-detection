@@ -51,69 +51,15 @@ class ModelItemList:
 
 
 class MainWindow(QMainWindow):
-    __raw_img: NPImage | None = None
-    __raw_img_qt: QPixmap | None = None
-    __result_img_qt: QPixmap | None = None
-    __model_item_list: ModelItemList
-
     __scale_strategy = {
         "aspectMode": Qt.AspectRatioMode.KeepAspectRatio,
         "mode": Qt.TransformationMode.SmoothTransformation,
     }
 
-    def resizeEvent(self, event):
-        self.__update_imgs()
-
-    def __update_imgs(self):
-        if self.ui.tabWidget.currentIndex() == 0:
-            self.__update_result_tab_img()
-        elif self.ui.tabWidget.currentIndex() == 1:
-            self.__update_structure_tab_img()
-        elif self.ui.tabWidget.currentIndex() == 2:
-            self.__update_train_tab_img()
-        elif self.ui.tabWidget.currentIndex() == 3:
-            self.__update_eval_tab_img()
-
-    def __update_result_tab_img(self):
-        layout_size = self.ui.resultTab.size()
-        result_tab_size = QSize(layout_size.width(), int(layout_size.height() / 2) - 2)
-        if self.__raw_img_qt:
-            self.ui.rawLabel.setPixmap(
-                self.__raw_img_qt.scaled(result_tab_size, **self.__scale_strategy)
-            )
-        if self.__result_img_qt:
-            self.ui.resultLabel.setPixmap(
-                self.__result_img_qt.scaled(result_tab_size, **self.__scale_strategy)
-            )
-
-    def __update_structure_tab_img(self):
-        layout_size = self.ui.structureTab.size()
-        structure_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
-        self.ui.structureLabel.setPixmap(
-            self.__model_item_list.get_structure_img(
-                self.ui.modelComboBox.currentIndex()
-            )
-            .get_Qt_pixmap()
-            .scaled(structure_tab_size, **self.__scale_strategy)
-        )
-
-    def __update_train_tab_img(self):
-        layout_size = self.ui.trainTab.size()
-        train_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
-        self.ui.trainLabel.setPixmap(
-            self.__model_item_list.get_train_img(self.ui.modelComboBox.currentIndex())
-            .get_Qt_pixmap()
-            .scaled(train_tab_size, **self.__scale_strategy)
-        )
-
-    def __update_eval_tab_img(self):
-        layout_size = self.ui.evalTab.size()
-        eval_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
-        self.ui.evalLabel.setPixmap(
-            self.__model_item_list.get_eval_img(self.ui.modelComboBox.currentIndex())
-            .get_Qt_pixmap()
-            .scaled(eval_tab_size, **self.__scale_strategy)
-        )
+    __raw_img: NPImage | None = None
+    __raw_img_qt: QPixmap | None = None
+    __result_img_qt: QPixmap | None = None
+    __model_item_list: ModelItemList
 
     def __init__(self, models: list[ModelConfig]):
         super().__init__()
@@ -198,4 +144,58 @@ class MainWindow(QMainWindow):
             show_conf=self.ui.confCheckBox.isChecked(),
             save=self.ui.saveCheckBox.isChecked(),
             save_dir=self.ui.modelComboBox.currentText().replace("/", "_"),
+        )
+
+    def resizeEvent(self, event):
+        self.__update_imgs()
+
+    def __update_imgs(self):
+        if self.ui.tabWidget.currentIndex() == 0:
+            self.__update_result_tab_img()
+        elif self.ui.tabWidget.currentIndex() == 1:
+            self.__update_structure_tab_img()
+        elif self.ui.tabWidget.currentIndex() == 2:
+            self.__update_train_tab_img()
+        elif self.ui.tabWidget.currentIndex() == 3:
+            self.__update_eval_tab_img()
+
+    def __update_result_tab_img(self):
+        layout_size = self.ui.resultTab.size()
+        result_tab_size = QSize(layout_size.width(), int(layout_size.height() / 2) - 2)
+        if self.__raw_img_qt:
+            self.ui.rawLabel.setPixmap(
+                self.__raw_img_qt.scaled(result_tab_size, **self.__scale_strategy)
+            )
+        if self.__result_img_qt:
+            self.ui.resultLabel.setPixmap(
+                self.__result_img_qt.scaled(result_tab_size, **self.__scale_strategy)
+            )
+
+    def __update_structure_tab_img(self):
+        layout_size = self.ui.structureTab.size()
+        structure_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
+        self.ui.structureLabel.setPixmap(
+            self.__model_item_list.get_structure_img(
+                self.ui.modelComboBox.currentIndex()
+            )
+            .get_Qt_pixmap()
+            .scaled(structure_tab_size, **self.__scale_strategy)
+        )
+
+    def __update_train_tab_img(self):
+        layout_size = self.ui.trainTab.size()
+        train_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
+        self.ui.trainLabel.setPixmap(
+            self.__model_item_list.get_train_img(self.ui.modelComboBox.currentIndex())
+            .get_Qt_pixmap()
+            .scaled(train_tab_size, **self.__scale_strategy)
+        )
+
+    def __update_eval_tab_img(self):
+        layout_size = self.ui.evalTab.size()
+        eval_tab_size = QSize(layout_size.width(), layout_size.height() - 2)
+        self.ui.evalLabel.setPixmap(
+            self.__model_item_list.get_eval_img(self.ui.modelComboBox.currentIndex())
+            .get_Qt_pixmap()
+            .scaled(eval_tab_size, **self.__scale_strategy)
         )

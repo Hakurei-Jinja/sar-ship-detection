@@ -32,5 +32,4 @@ model_configs = [
 ]
 
 if __name__ == "__main__":
-    app = App(model_configs)
-    app.run()
+    App(model_configs).run()
