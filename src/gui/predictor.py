@@ -1,3 +1,4 @@
+import os
 from dataclasses import asdict, dataclass
 
 from ultralytics.engine.model import Model
@@ -13,6 +14,7 @@ class PredictorConfig:
     show_labels: bool
     show_conf: bool
     save: bool
+    save_dir: str
 
     __getitem__ = lambda self, key: getattr(self, key)
     __setitem__ = lambda self, key, value: setattr(self, key, value)
@@ -38,6 +40,9 @@ class Predictor:
             iou=cfg.iou,
             augment=cfg.augment,
             save=cfg.save,
+            # WARNING: This solution is based on the ultralytics save behavior
+            # it will concat the 'name' to the default save directory
+            name=os.path.join("./predict", cfg.save_dir),
         )
         np_image = self.__get_np_image_from_results(results, cfg)
         np_image.BGR2RGB()

@@ -197,4 +197,5 @@ class MainWindow(QMainWindow):
             show_labels=self.ui.labelCheckBox.isChecked(),
             show_conf=self.ui.confCheckBox.isChecked(),
             save=self.ui.saveCheckBox.isChecked(),
+            save_dir=self.ui.modelComboBox.currentText().replace("/", "_"),
         )
